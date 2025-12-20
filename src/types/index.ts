@@ -1,3 +1,6 @@
+// <== AUTH TYPES ==>
+export * from "./auth";
+
 // <== DATABASE TYPES ==>
 export * from "./database";
 
