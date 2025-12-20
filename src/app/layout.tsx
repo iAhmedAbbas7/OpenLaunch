@@ -1,6 +1,8 @@
 // <== IMPORTS ==>
 import "./globals.css";
 import type { Metadata } from "next";
+import { Providers } from "@/components/providers";
+import { ScrollToTop } from "@/components/common/scroll-to-top";
 import { Space_Grotesk, Inter, JetBrains_Mono } from "next/font/google";
 
 // <== SPACE GROTESK - MODERN, TECHY DISPLAY FONT FOR HEADINGS ==>
@@ -29,7 +31,7 @@ export const metadata: Metadata = {
   // TITLE
   title: {
     default: "OpenLaunch",
-    template: "%s | OpenLaunch",
+    template: "OpenLaunch | %s",
   },
   // DESCRIPTION
   description:
@@ -78,7 +80,10 @@ const RootLayout = ({
       <body
         className={`${spaceGrotesk.variable} ${inter.variable} ${jetbrainsMono.variable} font-sans antialiased`}
       >
-        {children}
+        <Providers>
+          <ScrollToTop />
+          {children}
+        </Providers>
       </body>
     </html>
   );
