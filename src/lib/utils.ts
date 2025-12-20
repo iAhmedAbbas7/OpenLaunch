@@ -107,10 +107,14 @@ export function capitalize(text: string): string {
 }
 
 // <== GENERATE INITIALS FROM A NAME ==>
-export function getInitials(name: string, maxLength = 2): string {
+export function getInitials(name: string | null | undefined, maxLength = 2): string {
+  // RETURN EMPTY STRING IF NAME IS FALSY OR EMPTY
+  if (!name || name.trim() === "") return "";
   // RETURNING THE INITIALS
   return name
+    .trim()
     .split(" ")
+    .filter((word) => word.length > 0)
     .map((word) => word[0])
     .join("")
     .toUpperCase()
