@@ -50,3 +50,6 @@ export {
   getMutualFollowers,
   getSuggestedUsers,
 } from "./social";
+
+// <== CATEGORY ACTIONS ==>
+export { getCategories } from "./categories";
