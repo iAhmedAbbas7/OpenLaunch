@@ -81,31 +81,6 @@ export const resetPasswordSchema = z
     path: ["confirmPassword"],
   });
 
-// <== UPDATE PROFILE SCHEMA ==>
-export const updateProfileSchema = z.object({
-  // USERNAME
-  username: usernameSchema.optional(),
-  // DISPLAY NAME
-  displayName: z.string().max(100, "Display name is too long").optional(),
-  // BIO
-  bio: z.string().max(500, "Bio is too long").optional(),
-  // WEBSITE
-  website: z
-    .string()
-    .url("Please enter a valid URL")
-    .optional()
-    .or(z.literal("")),
-  // LOCATION
-  location: z.string().max(100, "Location is too long").optional(),
-  // TWITTER USERNAME
-  twitterUsername: z
-    .string()
-    .max(15, "Twitter username is too long")
-    .regex(/^[a-zA-Z0-9_]*$/, "Invalid Twitter username")
-    .optional()
-    .or(z.literal("")),
-});
-
 // <== SIGN UP INPUT TYPE ==>
 export type SignUpInput = z.infer<typeof signUpSchema>;
 // <== SIGN IN INPUT TYPE ==>
@@ -114,5 +89,3 @@ export type SignInInput = z.infer<typeof signInSchema>;
 export type ForgotPasswordInput = z.infer<typeof forgotPasswordSchema>;
 // <== RESET PASSWORD INPUT TYPE ==>
 export type ResetPasswordInput = z.infer<typeof resetPasswordSchema>;
-// <== UPDATE PROFILE INPUT TYPE ==>
-export type UpdateProfileInput = z.infer<typeof updateProfileSchema>;
