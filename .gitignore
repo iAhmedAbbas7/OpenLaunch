@@ -37,3 +37,6 @@ yarn-error.log*
 # <== TYPESCRIPT ==>
 *.tsbuildinfo
 next-env.d.ts
+
+# <== MARKDOWN FILES ==>   
+*.md
