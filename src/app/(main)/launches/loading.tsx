@@ -2,52 +2,60 @@
 import { Card } from "@/components/ui/card";
 import { ProjectGridSkeleton } from "@/components/projects";
 
+// <== SKELETON ==>
+const Skeleton = ({ className }: { className?: string }) => {
+  // RETURNING SKELETON COMPONENT
+  return <div className={`bg-secondary rounded animate-pulse ${className}`} />;
+};
+
 // <== LAUNCHES LOADING ==>
 const LaunchesLoading = () => {
   // RETURN LAUNCHES LOADING SKELETON
   return (
-    <div className="min-h-screen">
-      {/* HEADER */}
-      <section className="py-8 md:py-12 border-b border-border/50">
-        <div className="container mx-auto px-4">
-          <div className="flex items-center gap-3 mb-2">
-            <div className="size-9 rounded-lg bg-secondary animate-pulse" />
-            <div className="h-5 w-40 bg-secondary rounded-full animate-pulse" />
+    <div className="container max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-20 sm:pt-24 pb-8 sm:pb-12">
+      {/* HEADER SKELETON */}
+      <div className="mb-6 sm:mb-8">
+        <div className="flex items-start gap-3 sm:gap-4">
+          {/* ICON SKELETON */}
+          <Skeleton className="size-12 sm:size-14 rounded-xl shrink-0" />
+          {/* TEXT SKELETON */}
+          <div className="min-w-0 space-y-2">
+            {/* BADGE SKELETON */}
+            <Skeleton className="h-5 w-40 sm:w-52 rounded-full" />
+            {/* HEADING SKELETON */}
+            <Skeleton className="h-7 sm:h-9 w-44 sm:w-56" />
+            {/* SUBTEXT SKELETON */}
+            <Skeleton className="h-4 sm:h-5 w-56 sm:w-80 max-w-full" />
           </div>
-          <div className="h-10 w-64 bg-secondary rounded animate-pulse mb-2" />
-          <div className="h-6 w-96 bg-secondary rounded animate-pulse" />
         </div>
-      </section>
-      {/* FEATURED SECTION */}
-      <section className="py-8 bg-linear-to-b from-primary/5 to-transparent">
-        <div className="container mx-auto px-4">
-          <div className="flex items-center justify-between mb-6">
-            <div className="flex items-center gap-2">
-              <div className="size-5 bg-secondary rounded animate-pulse" />
-              <div className="h-6 w-40 bg-secondary rounded animate-pulse" />
-            </div>
-            <div className="h-8 w-20 bg-secondary rounded animate-pulse" />
+      </div>
+
+      {/* FEATURED SECTION SKELETON */}
+      <div className="mb-6 sm:mb-8 p-4 sm:p-6 rounded-xl border border-border/50">
+        <div className="flex items-center justify-between mb-4 sm:mb-6">
+          <div className="flex items-center gap-2">
+            <Skeleton className="size-4 sm:size-5 rounded" />
+            <Skeleton className="h-5 sm:h-6 w-32 sm:w-40" />
           </div>
-          <ProjectGridSkeleton columns={2} count={4} />
+          <Skeleton className="h-8 sm:h-9 w-16 sm:w-20 rounded" />
         </div>
-      </section>
-      {/* MAIN CONTENT */}
-      <section className="py-8">
-        <div className="container mx-auto px-4">
-          {/* TABS SKELETON */}
-          <Card className="p-1 w-fit mb-6 bg-secondary/50">
-            <div className="flex gap-1">
-              <div className="h-9 w-24 bg-secondary rounded animate-pulse" />
-              <div className="h-9 w-28 bg-secondary rounded animate-pulse" />
-              <div className="h-9 w-28 bg-secondary rounded animate-pulse" />
-            </div>
-          </Card>
-          {/* PROJECTS SKELETON */}
-          <ProjectGridSkeleton columns={2} count={6} />
+        <ProjectGridSkeleton columns={2} count={4} />
+      </div>
+
+      {/* TABS SKELETON */}
+      <Card className="p-1 w-fit mb-4 sm:mb-6 bg-secondary/50">
+        <div className="flex gap-1">
+          <Skeleton className="h-7 sm:h-8 w-16 sm:w-20 rounded" />
+          <Skeleton className="h-7 sm:h-8 w-20 sm:w-24 rounded" />
+          <Skeleton className="h-7 sm:h-8 w-20 sm:w-24 rounded" />
         </div>
-      </section>
+      </Card>
+
+      {/* PROJECTS SKELETON */}
+      <ProjectGridSkeleton columns={2} count={6} />
     </div>
   );
 };
 
+// <== EXPORTING LAUNCHES LOADING SKELETON ==>
 export default LaunchesLoading;
