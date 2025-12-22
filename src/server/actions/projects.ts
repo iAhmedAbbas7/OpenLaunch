@@ -19,6 +19,7 @@ import {
   upvotes,
   bookmarks,
   categories,
+  projectContributors,
 } from "@/lib/db/schema";
 import type {
   ApiResponse,
@@ -428,17 +429,12 @@ export async function getProjectBySlug(
 ): Promise<ApiResponse<ProjectWithDetails>> {
   // TRY TO FETCH PROJECT
   try {
-    // FETCH PROJECT
+    // FETCH PROJECT WITH MEDIA ONLY
     const project = await db.query.projects.findFirst({
       where: eq(projects.slug, slug),
       with: {
         media: {
           orderBy: (media, { asc }) => [asc(media.displayOrder)],
-        },
-        contributors: {
-          with: {
-            user: true,
-          },
         },
       },
     });
@@ -473,45 +469,56 @@ export async function getProjectBySlug(
             where: inArray(categories.id, project.categoryIds),
           })
         : [];
-    // BUILD PROJECT WITH DETAILS
-    const contributorsWithPreview = project.contributors.map((contributor) => {
-      // CAST TO UNKNOWN FIRST TO ACCESS NESTED USER RELATION
-      const contributorData = contributor as unknown as {
-        id: string;
-        projectId: string;
-        userId: string;
-        role: string;
-        addedAt: Date;
-        user: {
-          id: string;
-          username: string;
-          displayName: string | null;
-          avatarUrl: string | null;
-          bio: string | null;
-          isVerified: boolean;
-          reputationScore: number;
+    // FETCH CONTRIBUTORS SEPARATELY
+    const contributorRecords = await db
+      .select()
+      .from(projectContributors)
+      .where(eq(projectContributors.projectId, project.id));
+    // FETCH USER DATA FOR CONTRIBUTORS
+    const contributorsWithPreview = await Promise.all(
+      contributorRecords.map(async (contributor) => {
+        // FETCH USER PROFILE
+        const userProfile = await db.query.profiles.findFirst({
+          where: eq(profiles.id, contributor.userId),
+        });
+        // RETURN CONTRIBUTOR WITH USER PREVIEW
+        return {
+          id: contributor.id,
+          projectId: contributor.projectId,
+          userId: contributor.userId,
+          role: contributor.role,
+          joinedAt: contributor.joinedAt,
+          user: userProfile
+            ? {
+                id: userProfile.id,
+                username: userProfile.username,
+                displayName: userProfile.displayName,
+                avatarUrl: userProfile.avatarUrl,
+                bio: userProfile.bio,
+                isVerified: userProfile.isVerified,
+                reputationScore: userProfile.reputationScore,
+              }
+            : null,
         };
-      };
-      // RETURN CONTRIBUTOR WITH PREVIEW
-      return {
-        ...contributor,
-        user: {
-          id: contributorData.user.id,
-          username: contributorData.user.username,
-          displayName: contributorData.user.displayName,
-          avatarUrl: contributorData.user.avatarUrl,
-          bio: contributorData.user.bio,
-          isVerified: contributorData.user.isVerified,
-          reputationScore: contributorData.user.reputationScore,
-        },
-      };
-    });
+      })
+    );
+    // FILTER OUT CONTRIBUTORS WITH NULL USER (SHOULDN'T HAPPEN BUT SAFETY)
+    const validContributors = contributorsWithPreview.filter(
+      (c) => c.user !== null
+    ) as Array<{
+      id: string;
+      projectId: string;
+      userId: string;
+      role: string | null;
+      joinedAt: Date;
+      user: ProfilePreview;
+    }>;
     // BUILD PROJECT WITH DETAILS
     const projectWithDetails: ProjectWithDetails = {
       ...project,
       owner,
       media: project.media,
-      contributors: contributorsWithPreview,
+      contributors: validContributors,
       categories: projectCategories,
     };
     // RETURN SUCCESS RESPONSE
