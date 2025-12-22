@@ -2,6 +2,12 @@
 import { Card } from "@/components/ui/card";
 import { ProjectHeaderSkeleton } from "@/components/projects";
 
+// <== SKELETON ==>
+const Skeleton = ({ className }: { className?: string }) => {
+  // RETURNING SKELETON COMPONENT
+  return <div className={`bg-secondary rounded animate-pulse ${className}`} />;
+};
+
 // <== PROJECT LOADING SKELETON ==>
 const ProjectLoading = () => {
   // RETURN PROJECT LOADING SKELETON
@@ -10,7 +16,7 @@ const ProjectLoading = () => {
       {/* BACK LINK SKELETON */}
       <section className="py-4 border-b border-border/50">
         <div className="container mx-auto px-4">
-          <div className="h-5 w-32 bg-secondary rounded animate-pulse" />
+          <Skeleton className="h-5 w-32" />
         </div>
       </section>
       {/* MAIN CONTENT */}
@@ -23,22 +29,19 @@ const ProjectLoading = () => {
               <ProjectHeaderSkeleton />
               {/* DESCRIPTION */}
               <Card className="p-6">
-                <div className="h-6 w-40 bg-secondary rounded animate-pulse mb-4" />
+                <Skeleton className="h-6 w-40 mb-4" />
                 <div className="space-y-2">
-                  <div className="h-4 w-full bg-secondary rounded animate-pulse" />
-                  <div className="h-4 w-full bg-secondary rounded animate-pulse" />
-                  <div className="h-4 w-3/4 bg-secondary rounded animate-pulse" />
+                  <Skeleton className="h-4 w-full" />
+                  <Skeleton className="h-4 w-full" />
+                  <Skeleton className="h-4 w-3/4" />
                 </div>
               </Card>
               {/* GALLERY */}
               <Card className="p-6">
-                <div className="h-6 w-32 bg-secondary rounded animate-pulse mb-4" />
+                <Skeleton className="h-6 w-32 mb-4" />
                 <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3">
                   {Array.from({ length: 4 }).map((_, i) => (
-                    <div
-                      key={i}
-                      className="aspect-video rounded-lg bg-secondary animate-pulse"
-                    />
+                    <Skeleton key={i} className="aspect-video rounded-lg" />
                   ))}
                 </div>
               </Card>
@@ -47,24 +50,21 @@ const ProjectLoading = () => {
             <div className="space-y-6">
               {/* TECH STACK */}
               <Card className="p-6">
-                <div className="h-6 w-28 bg-secondary rounded animate-pulse mb-4" />
+                <Skeleton className="h-6 w-28 mb-4" />
                 <div className="flex flex-wrap gap-2">
                   {Array.from({ length: 6 }).map((_, i) => (
-                    <div
-                      key={i}
-                      className="h-6 w-16 bg-secondary rounded-full animate-pulse"
-                    />
+                    <Skeleton key={i} className="h-6 w-16 rounded-full" />
                   ))}
                 </div>
               </Card>
               {/* PROJECT INFO */}
               <Card className="p-6">
-                <div className="h-6 w-28 bg-secondary rounded animate-pulse mb-4" />
+                <Skeleton className="h-6 w-28 mb-4" />
                 <div className="space-y-3">
                   {Array.from({ length: 5 }).map((_, i) => (
                     <div key={i} className="flex justify-between">
-                      <div className="h-4 w-20 bg-secondary rounded animate-pulse" />
-                      <div className="h-4 w-16 bg-secondary rounded animate-pulse" />
+                      <Skeleton className="h-4 w-20" />
+                      <Skeleton className="h-4 w-16" />
                     </div>
                   ))}
                 </div>
@@ -77,4 +77,5 @@ const ProjectLoading = () => {
   );
 };
 
+// <== EXPORTING PROJECT LOADING SKELETON ==>
 export default ProjectLoading;
