@@ -8,11 +8,12 @@ import {
   ProjectFilters,
 } from "@/components/projects";
 import { motion } from "framer-motion";
+import { Badge } from "@/components/ui/badge";
 import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
-import { Folder, RefreshCw, Loader2 } from "lucide-react";
 import { useSearchParams, useRouter } from "next/navigation";
 import type { ProjectSortBy } from "@/lib/validations/projects";
+import { Compass, Folder, RefreshCw, Loader2 } from "lucide-react";
 import { useInfiniteProjects, useCategories, useDebounce } from "@/hooks";
 
 // <== SEARCH DEBOUNCE DELAY (MS) ==>
@@ -125,118 +126,148 @@ export const ExplorePageClient = () => {
   const allProjects = data?.pages.flatMap((page) => page.items) ?? [];
   // RETURN EXPLORE PAGE CLIENT COMPONENT
   return (
-    <div className="min-h-screen">
+    <div className="container max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-20 sm:pt-24 pb-8 sm:pb-12">
       {/* HEADER */}
-      <section className="py-8 md:py-12 border-b border-border/50">
-        <div className="container mx-auto px-4">
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.5 }}
-          >
-            <h1 className="text-3xl md:text-4xl font-bold font-heading mb-2">
+      <motion.div
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.5 }}
+        className="mb-6 sm:mb-8"
+      >
+        <div className="flex items-start gap-3 sm:gap-4">
+          {/* ICON */}
+          <div className="size-12 sm:size-14 rounded-xl bg-primary/10 flex items-center justify-center shrink-0">
+            <Compass className="size-6 sm:size-7 text-primary" />
+          </div>
+          {/* TEXT */}
+          <div className="min-w-0">
+            {/* BADGE */}
+            <Badge variant="secondary" className="mb-2 text-xs">
+              <Folder className="size-3 mr-1" />
+              Browse Projects
+            </Badge>
+            {/* HEADING */}
+            <h1 className="text-2xl sm:text-3xl font-bold font-heading mb-1">
               Explore Projects
             </h1>
-            <p className="text-lg text-muted-foreground">
+            {/* SUBTEXT */}
+            <p className="text-sm sm:text-base text-muted-foreground">
               Discover amazing projects built by developers from around the
               world
             </p>
-          </motion.div>
+          </div>
         </div>
-      </section>
-      {/* MAIN CONTENT */}
-      <section className="py-8">
-        <div className="container mx-auto px-4">
-          {/* FILTERS */}
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.5, delay: 0.1 }}
-            className="mb-8"
+      </motion.div>
+
+      {/* FILTERS */}
+      <motion.div
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.5, delay: 0.1 }}
+        className="mb-6 sm:mb-8"
+      >
+        <ProjectFilters
+          search={search}
+          onSearchChange={setSearch}
+          sortBy={sortBy}
+          onSortChange={setSortBy}
+          categoryId={categoryId}
+          onCategoryChange={setCategoryId}
+          categories={categories ?? []}
+          techStack={techStack}
+          onTechStackChange={setTechStack}
+          availableTechStack={POPULAR_TECH_STACK}
+          isOpenSource={isOpenSource}
+          onOpenSourceChange={setIsOpenSource}
+          onClearAll={handleClearAll}
+        />
+      </motion.div>
+
+      {/* LOADING STATE */}
+      {isLoading && <ProjectGridSkeleton columns={2} count={6} />}
+
+      {/* ERROR STATE */}
+      {error && (
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          className="text-center py-8 sm:py-12"
+        >
+          <div className="p-3 sm:p-4 rounded-full bg-destructive/10 w-fit mx-auto mb-3 sm:mb-4">
+            <RefreshCw className="size-6 sm:size-8 text-destructive" />
+          </div>
+          <h3 className="text-base sm:text-lg font-semibold mb-2">
+            Failed to load projects
+          </h3>
+          <p className="text-sm sm:text-base text-muted-foreground mb-4">
+            {error.message}
+          </p>
+          <Button
+            onClick={() => refetch()}
+            size="sm"
+            className="sm:size-default"
           >
-            <ProjectFilters
-              search={search}
-              onSearchChange={setSearch}
-              sortBy={sortBy}
-              onSortChange={setSortBy}
-              categoryId={categoryId}
-              onCategoryChange={setCategoryId}
-              categories={categories ?? []}
-              techStack={techStack}
-              onTechStackChange={setTechStack}
-              availableTechStack={POPULAR_TECH_STACK}
-              isOpenSource={isOpenSource}
-              onOpenSourceChange={setIsOpenSource}
-              onClearAll={handleClearAll}
-            />
-          </motion.div>
-          {/* LOADING STATE */}
-          {isLoading && <ProjectGridSkeleton columns={2} count={6} />}
-          {/* ERROR STATE */}
-          {error && (
-            <motion.div
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              className="text-center py-12"
-            >
-              <div className="p-4 rounded-full bg-destructive/10 w-fit mx-auto mb-4">
-                <RefreshCw className="size-8 text-destructive" />
-              </div>
-              <h3 className="text-lg font-semibold mb-2">
-                Failed to load projects
-              </h3>
-              <p className="text-muted-foreground mb-4">{error.message}</p>
-              <Button onClick={() => refetch()}>Try Again</Button>
-            </motion.div>
-          )}
-          {/* EMPTY STATE */}
-          {!isLoading && !error && allProjects.length === 0 && (
-            <motion.div
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              className="text-center py-12"
-            >
-              <div className="p-4 rounded-full bg-secondary w-fit mx-auto mb-4">
-                <Folder className="size-8 text-muted-foreground" />
-              </div>
-              <h3 className="text-lg font-semibold mb-2">No projects found</h3>
-              <p className="text-muted-foreground mb-4">
-                {search || categoryId || techStack.length > 0
-                  ? "Try adjusting your filters or search query."
-                  : "Be the first to launch a project!"}
-              </p>
-              <Button variant="outline" onClick={handleClearAll}>
-                Clear Filters
+            Try Again
+          </Button>
+        </motion.div>
+      )}
+
+      {/* EMPTY STATE */}
+      {!isLoading && !error && allProjects.length === 0 && (
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          className="text-center py-8 sm:py-12"
+        >
+          <div className="p-3 sm:p-4 rounded-full bg-secondary w-fit mx-auto mb-3 sm:mb-4">
+            <Folder className="size-6 sm:size-8 text-muted-foreground" />
+          </div>
+          <h3 className="text-base sm:text-lg font-semibold mb-2">
+            No projects found
+          </h3>
+          <p className="text-sm sm:text-base text-muted-foreground mb-4">
+            {search || categoryId || techStack.length > 0
+              ? "Try adjusting your filters or search query."
+              : "Be the first to launch a project!"}
+          </p>
+          <Button
+            variant="outline"
+            onClick={handleClearAll}
+            size="sm"
+            className="sm:size-default"
+          >
+            Clear Filters
+          </Button>
+        </motion.div>
+      )}
+
+      {/* PROJECTS GRID */}
+      {!isLoading && !error && allProjects.length > 0 && (
+        <>
+          <ProjectGrid projects={allProjects} columns={2} />
+          {/* LOAD MORE */}
+          {hasNextPage && (
+            <div className="flex justify-center mt-6 sm:mt-8">
+              <Button
+                variant="outline"
+                onClick={() => fetchNextPage()}
+                disabled={isFetchingNextPage}
+                size="sm"
+                className="sm:size-default"
+              >
+                {isFetchingNextPage ? (
+                  <>
+                    <Loader2 className="size-3.5 sm:size-4 mr-2 animate-spin" />
+                    Loading more...
+                  </>
+                ) : (
+                  "Load More Projects"
+                )}
               </Button>
-            </motion.div>
+            </div>
           )}
-          {/* PROJECTS GRID */}
-          {!isLoading && !error && allProjects.length > 0 && (
-            <>
-              <ProjectGrid projects={allProjects} columns={2} />
-              {/* LOAD MORE */}
-              {hasNextPage && (
-                <div className="flex justify-center mt-8">
-                  <Button
-                    variant="outline"
-                    onClick={() => fetchNextPage()}
-                    disabled={isFetchingNextPage}
-                  >
-                    {isFetchingNextPage ? (
-                      <>
-                        <Loader2 className="size-4 mr-2 animate-spin" />
-                        Loading more...
-                      </>
-                    ) : (
-                      "Load More Projects"
-                    )}
-                  </Button>
-                </div>
-              )}
-            </>
-          )}
-        </div>
-      </section>
+        </>
+      )}
     </div>
   );
 };
