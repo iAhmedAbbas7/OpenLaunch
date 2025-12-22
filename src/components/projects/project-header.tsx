@@ -329,6 +329,12 @@ export const ProjectHeader = ({ project, className }: ProjectHeaderProps) => {
 };
 
 // <== PROJECT HEADER SKELETON ==>
+const Skeleton = ({ className }: { className?: string }) => {
+  // RETURNING SKELETON COMPONENT
+  return <div className={cn("bg-secondary animate-pulse", className)} />;
+};
+
+// <== PROJECT HEADER SKELETON ==>
 export const ProjectHeaderSkeleton = ({
   className,
 }: {
@@ -338,40 +344,40 @@ export const ProjectHeaderSkeleton = ({
   return (
     <Card className={cn("overflow-hidden", className)}>
       {/* BANNER SKELETON */}
-      <div className="h-48 md:h-64 w-full bg-secondary animate-pulse" />
+      <Skeleton className="h-48 md:h-64 w-full" />
       {/* CONTENT */}
       <div className="p-6 md:p-8 -mt-20 relative z-10">
         {/* TOP ROW */}
         <div className="flex flex-col md:flex-row md:items-start gap-6">
           {/* LOGO SKELETON */}
-          <div className="size-20 md:size-24 rounded-2xl bg-secondary animate-pulse ring-4 ring-background" />
+          <Skeleton className="size-20 md:size-24 rounded-2xl ring-4 ring-background" />
           {/* INFO SKELETON */}
           <div className="flex-1 space-y-3">
-            <div className="h-8 w-64 bg-secondary rounded animate-pulse" />
-            <div className="h-6 w-full max-w-lg bg-secondary rounded animate-pulse" />
+            <Skeleton className="h-8 w-64 rounded" />
+            <Skeleton className="h-6 w-full max-w-lg rounded" />
             <div className="flex gap-4">
-              <div className="h-4 w-32 bg-secondary rounded animate-pulse" />
-              <div className="h-4 w-24 bg-secondary rounded animate-pulse" />
+              <Skeleton className="h-4 w-32 rounded" />
+              <Skeleton className="h-4 w-24 rounded" />
             </div>
           </div>
           {/* ACTIONS SKELETON */}
           <div className="flex gap-3">
-            <div className="h-11 w-16 bg-secondary rounded animate-pulse" />
-            <div className="size-11 bg-secondary rounded animate-pulse" />
-            <div className="size-11 bg-secondary rounded animate-pulse" />
+            <Skeleton className="h-11 w-16 rounded" />
+            <Skeleton className="size-11 rounded" />
+            <Skeleton className="size-11 rounded" />
           </div>
         </div>
         {/* LINKS SKELETON */}
         <div className="flex gap-3 mt-6">
-          <div className="h-10 w-32 bg-secondary rounded animate-pulse" />
-          <div className="h-10 w-32 bg-secondary rounded animate-pulse" />
+          <Skeleton className="h-10 w-32 rounded" />
+          <Skeleton className="h-10 w-32 rounded" />
         </div>
         {/* OWNER SKELETON */}
         <div className="mt-6 pt-6 border-t border-border/50">
           <div className="flex items-center gap-4">
-            <div className="h-4 w-16 bg-secondary rounded animate-pulse" />
-            <div className="size-8 rounded-full bg-secondary animate-pulse" />
-            <div className="h-4 w-24 bg-secondary rounded animate-pulse" />
+            <Skeleton className="h-4 w-16 rounded" />
+            <Skeleton className="size-8 rounded-full" />
+            <Skeleton className="h-4 w-24 rounded" />
           </div>
         </div>
       </div>
