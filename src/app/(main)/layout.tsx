@@ -1,6 +1,9 @@
+// <== IMPORTS ==>
+import { Navbar, Footer } from "@/components/layout";
+
 // <== MAIN LAYOUT PROPS ==>
 interface MainLayoutProps {
-  // CHILDREN
+  // <== CHILDREN ==>
   children: React.ReactNode;
 }
 
@@ -9,13 +12,16 @@ const MainLayout = ({ children }: MainLayoutProps) => {
   // RETURNING MAIN LAYOUT COMPONENT
   return (
     // MAIN LAYOUT CONTAINER
-    <div className="min-h-screen bg-background">
-      {/* CHILDREN */}
-      {children}
+    <div className="min-h-dvh bg-background flex flex-col">
+      {/* NAVBAR */}
+      <Navbar />
+      {/* MAIN CONTENT */}
+      <main className="flex-1">{children}</main>
+      {/* FOOTER */}
+      <Footer />
     </div>
   );
 };
 
 // <== EXPORTING MAIN LAYOUT ==>
 export default MainLayout;
-
