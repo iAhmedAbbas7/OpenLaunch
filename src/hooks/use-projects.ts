@@ -162,8 +162,14 @@ export function useFeaturedProjects(limit: number = 10) {
   });
 }
 
+// <== USE CREATE PROJECT MUTATION OPTIONS ==>
+interface UseCreateProjectOptions {
+  // <== SKIP SUCCESS TOAST ==>
+  skipSuccessToast?: boolean;
+}
+
 // <== USE CREATE PROJECT MUTATION ==>
-export function useCreateProject() {
+export function useCreateProject(options?: UseCreateProjectOptions) {
   // GET QUERY CLIENT
   const queryClient = useQueryClient();
   // RETURNING MUTATION
@@ -180,12 +186,16 @@ export function useCreateProject() {
       // RETURN DATA
       return result.data;
     },
+    // ON SUCCESS
     onSuccess: () => {
       // INVALIDATE PROJECT LISTS
       queryClient.invalidateQueries({ queryKey: projectKeys.lists() });
-      // SHOW SUCCESS TOAST
-      toast.success("Project created successfully");
+      // SHOW SUCCESS TOAST (IF NOT SKIPPED)
+      if (!options?.skipSuccessToast) {
+        toast.success("Project created successfully");
+      }
     },
+    // ON ERROR
     onError: (error) => {
       // SHOW ERROR TOAST
       toast.error(error.message || "Failed to create project");
