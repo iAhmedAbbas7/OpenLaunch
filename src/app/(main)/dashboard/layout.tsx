@@ -1,17 +1,6 @@
-// <== IMPORTS ==>
-import type { Metadata } from "next";
-
-// <== METADATA ==>
-export const metadata: Metadata = {
-  // TITLE
-  title: "Dashboard",
-  // DESCRIPTION
-  description: "Manage your projects, articles, and account settings",
-};
-
 // <== DASHBOARD LAYOUT PROPS ==>
 interface DashboardLayoutProps {
-  // CHILDREN
+  // <== CHILDREN ==>
   children: React.ReactNode;
 }
 
