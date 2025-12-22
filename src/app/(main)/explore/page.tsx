@@ -8,7 +8,7 @@ export const metadata: Metadata = {
   description:
     "Discover amazing projects built by developers from around the world. Find open source projects, web apps, tools, and more.",
   openGraph: {
-    title: "OpenLaunch | Explore Projects",
+    title: "Explore Projects | OpenLaunch",
     description:
       "Discover amazing projects built by developers from around the world. Find open source projects, web apps, tools, and more.",
   },
@@ -20,4 +20,5 @@ const ExplorePage = () => {
   return <ExplorePageClient />;
 };
 
+// <== EXPORTING EXPLORE PAGE ==>
 export default ExplorePage;
