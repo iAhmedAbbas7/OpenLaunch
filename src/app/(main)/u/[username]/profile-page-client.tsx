@@ -61,7 +61,7 @@ export const ProfilePageClient = ({
   );
   // RETURNING PROFILE PAGE CLIENT
   return (
-    <div className="container mx-auto px-4 py-8 max-w-5xl">
+    <div className="container max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 pt-20 sm:pt-24 pb-8 sm:pb-12">
       {/* PROFILE HEADER */}
       <ProfileHeader profile={profile} />
       {/* PROFILE TABS */}
@@ -69,7 +69,7 @@ export const ProfilePageClient = ({
         profile={profile}
         activeTab={activeTab}
         onTabChange={handleTabChange}
-        className="mt-8"
+        className="mt-6 sm:mt-8"
       >
         {/* PROJECTS TAB */}
         <ProfileTabContent value="projects">
@@ -77,23 +77,23 @@ export const ProfilePageClient = ({
         </ProfileTabContent>
         {/* ARTICLES TAB */}
         <ProfileTabContent value="articles">
-          <div className="text-center py-12">
-            <FileText className="size-12 text-muted-foreground/50 mx-auto mb-4" />
-            <p className="text-muted-foreground">No articles yet</p>
+          <div className="text-center py-8 sm:py-12">
+            <FileText className="size-10 sm:size-12 text-muted-foreground/50 mx-auto mb-3 sm:mb-4" />
+            <p className="text-sm sm:text-base text-muted-foreground">No articles yet</p>
           </div>
         </ProfileTabContent>
         {/* ACTIVITY TAB */}
         <ProfileTabContent value="activity">
-          <div className="text-center py-12">
-            <Activity className="size-12 text-muted-foreground/50 mx-auto mb-4" />
-            <p className="text-muted-foreground">No recent activity</p>
+          <div className="text-center py-8 sm:py-12">
+            <Activity className="size-10 sm:size-12 text-muted-foreground/50 mx-auto mb-3 sm:mb-4" />
+            <p className="text-sm sm:text-base text-muted-foreground">No recent activity</p>
           </div>
         </ProfileTabContent>
         {/* ACHIEVEMENTS TAB */}
         <ProfileTabContent value="achievements">
-          <div className="text-center py-12">
-            <Trophy className="size-12 text-muted-foreground/50 mx-auto mb-4" />
-            <p className="text-muted-foreground">No achievements yet</p>
+          <div className="text-center py-8 sm:py-12">
+            <Trophy className="size-10 sm:size-12 text-muted-foreground/50 mx-auto mb-3 sm:mb-4" />
+            <p className="text-sm sm:text-base text-muted-foreground">No achievements yet</p>
           </div>
         </ProfileTabContent>
         {/* FOLLOWERS TAB */}
