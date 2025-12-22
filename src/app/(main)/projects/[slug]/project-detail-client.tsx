@@ -6,13 +6,14 @@ import {
   ProjectHeader,
   ProjectGallery,
   ProjectGalleryEmpty,
+  CodeBrowser,
 } from "@/components/projects";
 import Link from "next/link";
 import { motion } from "framer-motion";
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import type { ProjectWithDetails } from "@/types/database";
-import { Tags, FolderOpen, ArrowLeft } from "lucide-react";
+import { Tags, FolderOpen, ArrowLeft, Code, Github } from "lucide-react";
 
 // <== PROJECT DETAIL CLIENT PROPS ==>
 interface ProjectDetailClientProps {
@@ -83,6 +84,37 @@ export const ProjectDetailClient = ({ project }: ProjectDetailClientProps) => {
                   <ProjectGalleryEmpty />
                 )}
               </motion.div>
+              {/* CODE BROWSER */}
+              {project.githubUrl && (
+                <motion.div
+                  initial={{ opacity: 0, y: 20 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ duration: 0.5, delay: 0.25 }}
+                >
+                  <div className="space-y-4">
+                    <div className="flex items-center justify-between">
+                      <h2 className="text-lg font-semibold flex items-center gap-2">
+                        <Code className="size-5" />
+                        Source Code
+                      </h2>
+                      <a
+                        href={project.githubUrl}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="text-sm text-muted-foreground hover:text-foreground inline-flex items-center gap-1 transition-colors"
+                      >
+                        <Github className="size-4" />
+                        View on GitHub
+                      </a>
+                    </div>
+                    <CodeBrowser
+                      projectId={project.id}
+                      githubUrl={project.githubUrl}
+                      defaultHeight="500px"
+                    />
+                  </div>
+                </motion.div>
+              )}
               {/* COMMENTS SECTION PLACEHOLDER */}
               <motion.div
                 initial={{ opacity: 0, y: 20 }}
