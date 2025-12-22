@@ -51,5 +51,20 @@ export {
   getSuggestedUsers,
 } from "./social";
 
+// <== GITHUB ACTIONS ==>
+export {
+  getGitHubConnectionStatus,
+  getUserGitHubRepositories,
+  getRepositoryStats,
+  extractProjectInfoFromGitHub,
+  getProjectFileTree,
+  getProjectFileContent,
+  syncProjectFilesFromGitHub,
+  connectGitHubAccount,
+  disconnectGitHubAccount,
+  linkProjectToGitHub,
+  unlinkProjectFromGitHub,
+} from "./github";
+
 // <== CATEGORY ACTIONS ==>
 export { getCategories } from "./categories";
