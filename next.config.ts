@@ -2,7 +2,27 @@
 import type { NextConfig } from "next";
 
 // <== NEXT CONFIG ==>
-const nextConfig: NextConfig = {};
+const nextConfig: NextConfig = {
+  // <== IMAGES ==>
+  images: {
+    remotePatterns: [
+      {
+        // GITHUB AVATARS
+        protocol: "https",
+        hostname: "avatars.githubusercontent.com",
+      },
+      {
+        // GITHUB RAW CONTENT (FOR CODE BROWSER IMAGES)
+        protocol: "https",
+        hostname: "raw.githubusercontent.com",
+      },
+      {
+        // SUPABASE STORAGE
+        protocol: "https",
+        hostname: "*.supabase.co",
+      },
+    ],
+  },
+};
 
-// <== EXPORTING NEXT CONFIG ==>
 export default nextConfig;
