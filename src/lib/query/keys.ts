@@ -180,3 +180,23 @@ export const searchKeys = {
   suggestions: (query: string) =>
     [...searchKeys.all, "suggestions", query] as const,
 };
+
+// <== GITHUB QUERY KEYS ==>
+export const githubKeys = {
+  // ALL GITHUB
+  all: ["github"] as const,
+  // CONNECTION STATUS
+  connectionStatus: () => [...githubKeys.all, "connection-status"] as const,
+  // USER REPOSITORIES
+  repositories: (page?: number, sort?: string, search?: string) =>
+    [...githubKeys.all, "repositories", page, sort, search] as const,
+  // REPOSITORY STATS
+  repoStats: (githubUrl: string) =>
+    [...githubKeys.all, "repo-stats", githubUrl] as const,
+  // FILE TREE
+  fileTree: (projectId: string) =>
+    [...githubKeys.all, "file-tree", projectId] as const,
+  // FILE CONTENT
+  fileContent: (projectId: string, path: string) =>
+    [...githubKeys.all, "file-content", projectId, path] as const,
+};
