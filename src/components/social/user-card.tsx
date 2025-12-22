@@ -26,6 +26,14 @@ interface UserCardProps {
   size?: "sm" | "default" | "lg";
 }
 
+// <== SKELETON ==>
+const Skeleton = ({ className }: { className?: string }) => {
+  // RETURNING SKELETON COMPONENT
+  return (
+    <div className={cn("bg-secondary rounded animate-pulse", className)} />
+  );
+};
+
 // <== USER CARD COMPONENT ==>
 export const UserCard = ({
   user,
@@ -37,20 +45,28 @@ export const UserCard = ({
 }: UserCardProps) => {
   // GET AVATAR SIZE BASED ON SIZE
   const avatarSize =
-    size === "sm" ? "size-10" : size === "lg" ? "size-16" : "size-12";
+    size === "sm"
+      ? "size-8 sm:size-10"
+      : size === "lg"
+      ? "size-12 sm:size-16"
+      : "size-10 sm:size-12";
   // GET NAME SIZE BASED ON SIZE
   const nameSize =
-    size === "sm" ? "text-sm" : size === "lg" ? "text-lg" : "text-base";
+    size === "sm"
+      ? "text-xs sm:text-sm"
+      : size === "lg"
+      ? "text-base sm:text-lg"
+      : "text-sm sm:text-base";
   // RETURNING USER CARD COMPONENT
   return (
     <Card
       className={cn(
-        "p-4 transition-all duration-200 hover:bg-secondary/50",
+        "p-3 sm:p-4 transition-all duration-200 hover:bg-secondary/50",
         className
       )}
     >
       {/* CARD CONTENT */}
-      <div className="flex items-start gap-4">
+      <div className="flex items-start gap-2.5 sm:gap-4">
         {/* AVATAR LINK */}
         <Link href={`/u/${user.username}`} className="shrink-0">
           <Avatar className={cn(avatarSize, "ring-2 ring-border")}>
@@ -58,7 +74,7 @@ export const UserCard = ({
               src={user.avatarUrl ?? undefined}
               alt={user.displayName ?? user.username}
             />
-            <AvatarFallback className="bg-primary/10 text-primary font-medium">
+            <AvatarFallback className="bg-primary/10 text-primary font-medium text-xs sm:text-sm">
               {(user.displayName ?? user.username).charAt(0).toUpperCase()}
             </AvatarFallback>
           </Avatar>
@@ -66,7 +82,7 @@ export const UserCard = ({
         {/* USER INFO */}
         <div className="flex-1 min-w-0">
           {/* NAME AND VERIFIED BADGE */}
-          <div className="flex items-center gap-2">
+          <div className="flex items-center gap-1.5 sm:gap-2">
             {/* NAME LINK */}
             <Link
               href={`/u/${user.username}`}
@@ -79,27 +95,27 @@ export const UserCard = ({
             </Link>
             {/* VERIFIED BADGE */}
             {user.isVerified && (
-              <BadgeCheck className="size-4 text-primary shrink-0" />
+              <BadgeCheck className="size-3.5 sm:size-4 text-primary shrink-0" />
             )}
           </div>
           {/* USERNAME */}
           <Link
             href={`/u/${user.username}`}
-            className="text-muted-foreground text-sm hover:text-foreground transition-colors"
+            className="text-muted-foreground text-xs sm:text-sm hover:text-foreground transition-colors"
           >
             @{user.username}
           </Link>
           {/* BIO */}
           {showBio && user.bio && (
-            <p className="text-sm text-muted-foreground mt-2 line-clamp-2">
+            <p className="text-xs sm:text-sm text-muted-foreground mt-1.5 sm:mt-2 line-clamp-2">
               {user.bio}
             </p>
           )}
           {/* REPUTATION */}
           {showReputation && user.reputationScore > 0 && (
-            <div className="flex items-center gap-1 mt-2 text-xs text-muted-foreground">
-              <Star className="size-3 text-amber-500 fill-amber-500" />
-              <span>{user.reputationScore.toLocaleString()} reputation</span>
+            <div className="flex items-center gap-0.5 sm:gap-1 mt-1.5 sm:mt-2 text-[10px] sm:text-xs text-muted-foreground">
+              <Star className="size-2.5 sm:size-3 text-amber-500 fill-amber-500" />
+              <span>{user.reputationScore.toLocaleString()} rep</span>
             </div>
           )}
         </div>
@@ -109,7 +125,7 @@ export const UserCard = ({
             targetUserId={user.id}
             targetUsername={user.username}
             size="sm"
-            className="shrink-0"
+            className="shrink-0 h-7 sm:h-8 text-xs"
           />
         )}
       </div>
@@ -121,18 +137,18 @@ export const UserCard = ({
 export const UserCardSkeleton = ({ className }: { className?: string }) => {
   // RETURNING SKELETON
   return (
-    <Card className={cn("p-4", className)}>
-      <div className="flex items-start gap-4">
+    <Card className={cn("p-3 sm:p-4", className)}>
+      <div className="flex items-start gap-2.5 sm:gap-4">
         {/* AVATAR SKELETON */}
-        <div className="size-12 rounded-full bg-secondary animate-pulse shrink-0" />
+        <Skeleton className="size-10 sm:size-12 rounded-full shrink-0" />
         {/* INFO SKELETON */}
-        <div className="flex-1 space-y-2">
-          <div className="h-5 w-32 bg-secondary rounded animate-pulse" />
-          <div className="h-4 w-24 bg-secondary rounded animate-pulse" />
-          <div className="h-4 w-full bg-secondary rounded animate-pulse mt-2" />
+        <div className="flex-1 min-w-0 space-y-1.5 sm:space-y-2">
+          <Skeleton className="h-4 sm:h-5 w-24 sm:w-32" />
+          <Skeleton className="h-3 sm:h-4 w-16 sm:w-24" />
+          <Skeleton className="h-3 sm:h-4 w-full max-w-[200px] mt-1.5 sm:mt-2" />
         </div>
         {/* BUTTON SKELETON */}
-        <div className="h-8 w-20 bg-secondary rounded animate-pulse shrink-0" />
+        <Skeleton className="h-7 sm:h-8 w-16 sm:w-20 rounded-md shrink-0" />
       </div>
     </Card>
   );
