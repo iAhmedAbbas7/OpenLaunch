@@ -28,7 +28,7 @@ export async function generateMetadata({
     title: project.name,
     description: project.tagline,
     openGraph: {
-      title: `OpenLaunch | ${project.name}`,
+      title: `${project.name} | OpenLaunch`,
       description: project.tagline,
       images: project.bannerUrl
         ? [{ url: project.bannerUrl, width: 1200, height: 630 }]
@@ -38,7 +38,7 @@ export async function generateMetadata({
     },
     twitter: {
       card: "summary_large_image",
-      title: project.name,
+      title: `${project.name} | OpenLaunch`,
       description: project.tagline,
       images: project.bannerUrl ?? project.logoUrl ?? undefined,
     },
@@ -66,4 +66,5 @@ const ProjectPage = async ({
   return <ProjectDetailClient project={project} />;
 };
 
+// <== EXPORTING PROJECT PAGE ==>
 export default ProjectPage;
