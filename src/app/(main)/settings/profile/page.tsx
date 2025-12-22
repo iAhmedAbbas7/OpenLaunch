@@ -14,11 +14,11 @@ export const metadata: Metadata = {
 const ProfileSettingsPage = () => {
   // RETURNING PAGE
   return (
-    <div className="space-y-6">
+    <div className="space-y-4 sm:space-y-6">
       {/* HEADER */}
       <div>
-        <h2 className="text-2xl font-bold font-heading">Profile</h2>
-        <p className="text-muted-foreground mt-1">
+        <h2 className="text-xl sm:text-2xl font-bold font-heading">Profile</h2>
+        <p className="text-sm sm:text-base text-muted-foreground mt-1">
           This information will be displayed publicly on your profile
         </p>
       </div>
