@@ -14,11 +14,13 @@ export const metadata: Metadata = {
 const AppearanceSettingsPage = () => {
   // RETURNING PAGE
   return (
-    <div className="space-y-6">
+    <div className="space-y-4 sm:space-y-6">
       {/* HEADER */}
       <div>
-        <h2 className="text-2xl font-bold font-heading">Appearance</h2>
-        <p className="text-muted-foreground mt-1">
+        <h2 className="text-xl sm:text-2xl font-bold font-heading">
+          Appearance
+        </h2>
+        <p className="text-sm sm:text-base text-muted-foreground mt-1">
           Customize the look and feel of OpenLaunch
         </p>
       </div>
@@ -28,4 +30,5 @@ const AppearanceSettingsPage = () => {
   );
 };
 
+// <== EXPORTING APPEARANCE SETTINGS PAGE ==>
 export default AppearanceSettingsPage;
