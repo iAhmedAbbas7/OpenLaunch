@@ -39,7 +39,7 @@ export const ProfileHeader = ({ profile, className }: ProfileHeaderProps) => {
   return (
     <div className={cn("relative", className)}>
       {/* BANNER */}
-      <div className="h-48 md:h-64 w-full bg-linear-to-br from-primary/20 via-primary/10 to-secondary/20 rounded-xl overflow-hidden relative">
+      <div className="h-32 sm:h-48 md:h-64 w-full bg-linear-to-br from-primary/20 via-primary/10 to-secondary/20 rounded-xl overflow-hidden relative">
         {profile.bannerUrl && (
           <Image
             src={profile.bannerUrl}
@@ -52,15 +52,15 @@ export const ProfileHeader = ({ profile, className }: ProfileHeaderProps) => {
         )}
       </div>
       {/* PROFILE INFO CONTAINER */}
-      <div className="relative px-4 md:px-6 pb-6">
+      <div className="relative px-3 sm:px-4 md:px-6 pb-4 sm:pb-6">
         {/* AVATAR */}
-        <div className="absolute -top-16 left-4 md:left-6">
-          <Avatar className="size-32 ring-4 ring-background shadow-xl">
+        <div className="absolute -top-10 sm:-top-14 md:-top-16 left-3 sm:left-4 md:left-6">
+          <Avatar className="size-20 sm:size-28 md:size-32 ring-3 sm:ring-4 ring-background shadow-xl">
             <AvatarImage
               src={profile.avatarUrl ?? undefined}
               alt={profile.displayName ?? profile.username}
             />
-            <AvatarFallback className="bg-primary/10 text-primary font-bold text-4xl">
+            <AvatarFallback className="bg-primary/10 text-primary font-bold text-2xl sm:text-3xl md:text-4xl">
               {(profile.displayName ?? profile.username)
                 .charAt(0)
                 .toUpperCase()}
@@ -68,56 +68,64 @@ export const ProfileHeader = ({ profile, className }: ProfileHeaderProps) => {
           </Avatar>
         </div>
         {/* ACTION BUTTONS */}
-        <div className="flex justify-end pt-4 gap-3">
+        <div className="flex justify-end pt-3 sm:pt-4 gap-2 sm:gap-3">
           {isOwnProfile ? (
-            <Button variant="outline" asChild>
+            <Button
+              variant="outline"
+              size="sm"
+              asChild
+              className="h-8 sm:h-9 md:h-10 text-xs sm:text-sm"
+            >
               <Link href="/settings/profile">
-                <Settings className="size-4 mr-2" />
-                Edit Profile
+                <Settings className="size-3.5 sm:size-4 mr-1.5 sm:mr-2" />
+                <span className="hidden sm:inline">Edit </span>Profile
               </Link>
             </Button>
           ) : (
             <FollowButton
               targetUserId={profile.id}
               targetUsername={profile.username}
-              size="lg"
+              size="default"
+              className="h-8 sm:h-9 md:h-10 text-xs sm:text-sm"
             />
           )}
         </div>
         {/* USER INFO */}
-        <div className="mt-4">
+        <div className="mt-8 sm:mt-6 md:mt-4">
           {/* NAME AND BADGES */}
-          <div className="flex items-center gap-3 flex-wrap">
+          <div className="flex items-center gap-2 sm:gap-3 flex-wrap">
             {/* DISPLAY NAME */}
-            <h1 className="text-2xl md:text-3xl font-bold font-heading">
+            <h1 className="text-xl sm:text-2xl md:text-3xl font-bold font-heading">
               {profile.displayName ?? profile.username}
             </h1>
             {/* VERIFIED BADGE */}
             {profile.isVerified && (
-              <BadgeCheck className="size-6 text-primary" />
+              <BadgeCheck className="size-5 sm:size-6 text-primary" />
             )}
             {/* PRO BADGE */}
             {profile.isPro && (
-              <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-linear-to-r from-amber-500/20 to-orange-500/20 text-amber-500 text-xs font-medium">
-                <Sparkles className="size-3" />
+              <span className="inline-flex items-center gap-0.5 sm:gap-1 px-1.5 sm:px-2 py-0.5 rounded-full bg-linear-to-r from-amber-500/20 to-orange-500/20 text-amber-500 text-[10px] sm:text-xs font-medium">
+                <Sparkles className="size-2.5 sm:size-3" />
                 PRO
               </span>
             )}
           </div>
           {/* USERNAME */}
-          <p className="text-muted-foreground text-lg">@{profile.username}</p>
+          <p className="text-sm sm:text-base md:text-lg text-muted-foreground">
+            @{profile.username}
+          </p>
           {/* BIO */}
           {profile.bio && (
-            <p className="mt-4 text-foreground/90 max-w-2xl leading-relaxed">
+            <p className="mt-3 sm:mt-4 text-sm sm:text-base text-foreground/90 max-w-2xl leading-relaxed">
               {profile.bio}
             </p>
           )}
           {/* META INFO */}
-          <div className="flex flex-wrap items-center gap-4 mt-4 text-sm text-muted-foreground">
+          <div className="flex flex-wrap items-center gap-x-3 sm:gap-x-4 gap-y-1.5 sm:gap-y-2 mt-3 sm:mt-4 text-xs sm:text-sm text-muted-foreground">
             {/* LOCATION */}
             {profile.location && (
-              <div className="flex items-center gap-1.5">
-                <MapPin className="size-4" />
+              <div className="flex items-center gap-1 sm:gap-1.5">
+                <MapPin className="size-3.5 sm:size-4" />
                 <span>{profile.location}</span>
               </div>
             )}
@@ -127,10 +135,12 @@ export const ProfileHeader = ({ profile, className }: ProfileHeaderProps) => {
                 href={profile.website}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="flex items-center gap-1.5 hover:text-primary transition-colors"
+                className="flex items-center gap-1 sm:gap-1.5 hover:text-primary transition-colors"
               >
-                <LinkIcon className="size-4" />
-                <span>{new URL(profile.website).hostname}</span>
+                <LinkIcon className="size-3.5 sm:size-4" />
+                <span className="truncate max-w-[120px] sm:max-w-none">
+                  {new URL(profile.website).hostname}
+                </span>
               </a>
             )}
             {/* GITHUB */}
@@ -139,10 +149,10 @@ export const ProfileHeader = ({ profile, className }: ProfileHeaderProps) => {
                 href={`https://github.com/${profile.githubUsername}`}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="flex items-center gap-1.5 hover:text-primary transition-colors"
+                className="flex items-center gap-1 sm:gap-1.5 hover:text-primary transition-colors"
               >
-                <Github className="size-4" />
-                <span>{profile.githubUsername}</span>
+                <Github className="size-3.5 sm:size-4" />
+                <span className="hidden sm:inline">{profile.githubUsername}</span>
               </a>
             )}
             {/* TWITTER */}
@@ -151,60 +161,60 @@ export const ProfileHeader = ({ profile, className }: ProfileHeaderProps) => {
                 href={`https://twitter.com/${profile.twitterUsername}`}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="flex items-center gap-1.5 hover:text-primary transition-colors"
+                className="flex items-center gap-1 sm:gap-1.5 hover:text-primary transition-colors"
               >
-                <Twitter className="size-4" />
-                <span>{profile.twitterUsername}</span>
+                <Twitter className="size-3.5 sm:size-4" />
+                <span className="hidden sm:inline">{profile.twitterUsername}</span>
               </a>
             )}
             {/* JOINED DATE */}
-            <div className="flex items-center gap-1.5">
-              <Calendar className="size-4" />
+            <div className="flex items-center gap-1 sm:gap-1.5">
+              <Calendar className="size-3.5 sm:size-4" />
               <span>Joined {formatDate(profile.createdAt)}</span>
             </div>
           </div>
           {/* STATS */}
-          <div className="flex flex-wrap items-center gap-6 mt-6">
+          <div className="flex flex-wrap items-center gap-x-4 sm:gap-x-6 gap-y-2 mt-4 sm:mt-6 text-sm sm:text-base">
             {/* FOLLOWERS */}
             <Link
               href={`/u/${profile.username}?tab=followers`}
               className="hover:text-primary transition-colors"
             >
-              <span className="font-bold text-lg">
+              <span className="font-bold text-base sm:text-lg">
                 {profile.followersCount.toLocaleString()}
               </span>{" "}
-              <span className="text-muted-foreground">Followers</span>
+              <span className="text-muted-foreground text-xs sm:text-sm">Followers</span>
             </Link>
             {/* FOLLOWING */}
             <Link
               href={`/u/${profile.username}?tab=following`}
               className="hover:text-primary transition-colors"
             >
-              <span className="font-bold text-lg">
+              <span className="font-bold text-base sm:text-lg">
                 {profile.followingCount.toLocaleString()}
               </span>{" "}
-              <span className="text-muted-foreground">Following</span>
+              <span className="text-muted-foreground text-xs sm:text-sm">Following</span>
             </Link>
             {/* PROJECTS */}
             <div>
-              <span className="font-bold text-lg">
+              <span className="font-bold text-base sm:text-lg">
                 {profile.projectsCount.toLocaleString()}
               </span>{" "}
-              <span className="text-muted-foreground">Projects</span>
+              <span className="text-muted-foreground text-xs sm:text-sm">Projects</span>
             </div>
-            {/* ARTICLES */}
-            <div>
-              <span className="font-bold text-lg">
+            {/* ARTICLES - HIDDEN ON VERY SMALL SCREENS */}
+            <div className="hidden sm:block">
+              <span className="font-bold text-base sm:text-lg">
                 {profile.articlesCount.toLocaleString()}
               </span>{" "}
-              <span className="text-muted-foreground">Articles</span>
+              <span className="text-muted-foreground text-xs sm:text-sm">Articles</span>
             </div>
             {/* REPUTATION */}
-            <div className="flex items-center gap-1.5">
-              <span className="font-bold text-lg text-amber-500">
+            <div className="flex items-center gap-1 sm:gap-1.5">
+              <span className="font-bold text-base sm:text-lg text-amber-500">
                 {profile.reputationScore.toLocaleString()}
               </span>
-              <span className="text-muted-foreground">Reputation</span>
+              <span className="text-muted-foreground text-xs sm:text-sm">Rep</span>
             </div>
           </div>
         </div>
@@ -213,48 +223,52 @@ export const ProfileHeader = ({ profile, className }: ProfileHeaderProps) => {
   );
 };
 
+// <== SKELETON ==>
+const Skeleton = ({ className }: { className?: string }) => {
+  return <div className={`bg-secondary rounded animate-pulse ${className}`} />;
+};
+
 // <== PROFILE HEADER SKELETON ==>
 export const ProfileHeaderSkeleton = () => {
   // RETURN PROFILE HEADER SKELETON
   return (
     <div className="relative">
       {/* BANNER SKELETON */}
-      <div className="h-48 md:h-64 w-full bg-secondary/50 rounded-xl animate-pulse" />
+      <Skeleton className="h-32 sm:h-48 md:h-64 w-full rounded-xl" />
       {/* PROFILE INFO CONTAINER */}
-      <div className="relative px-4 md:px-6 pb-6">
+      <div className="relative px-3 sm:px-4 md:px-6 pb-4 sm:pb-6">
         {/* AVATAR SKELETON */}
-        <div className="absolute -top-16 left-4 md:left-6">
-          <div className="size-32 rounded-full bg-secondary ring-4 ring-background animate-pulse" />
+        <div className="absolute -top-10 sm:-top-14 md:-top-16 left-3 sm:left-4 md:left-6">
+          <Skeleton className="size-20 sm:size-28 md:size-32 rounded-full ring-3 sm:ring-4 ring-background" />
         </div>
         {/* ACTION BUTTON SKELETON */}
-        <div className="flex justify-end pt-4">
-          <div className="h-10 w-32 bg-secondary rounded-md animate-pulse" />
+        <div className="flex justify-end pt-3 sm:pt-4">
+          <Skeleton className="h-8 sm:h-9 md:h-10 w-20 sm:w-28 md:w-32 rounded-md" />
         </div>
         {/* INFO SKELETON */}
-        <div className="mt-4 space-y-3">
+        <div className="mt-8 sm:mt-6 md:mt-4 space-y-2 sm:space-y-3">
           {/* NAME SKELETON */}
-          <div className="h-8 w-48 bg-secondary rounded animate-pulse" />
+          <Skeleton className="h-6 sm:h-7 md:h-8 w-36 sm:w-44 md:w-48" />
           {/* USERNAME SKELETON */}
-          <div className="h-5 w-32 bg-secondary rounded animate-pulse" />
+          <Skeleton className="h-4 sm:h-5 w-24 sm:w-28 md:w-32" />
           {/* BIO SKELETON */}
-          <div className="h-16 w-full max-w-2xl bg-secondary rounded animate-pulse mt-4" />
-          {/* LOCATION SKELETON */}
-          <div className="flex gap-4 mt-4">
-            {/* LOCATION SKELETON */}
-            <div className="h-4 w-24 bg-secondary rounded animate-pulse" />
-            {/* WEBSITE SKELETON */}
-            <div className="h-4 w-24 bg-secondary rounded animate-pulse" />
-            {/* GITHUB SKELETON */}
-            <div className="h-4 w-24 bg-secondary rounded animate-pulse" />
+          <div className="space-y-1.5 sm:space-y-2 mt-3 sm:mt-4">
+            <Skeleton className="h-3 sm:h-4 w-full max-w-md" />
+            <Skeleton className="h-3 sm:h-4 w-4/5 max-w-sm" />
+          </div>
+          {/* META INFO SKELETON */}
+          <div className="flex flex-wrap gap-2 sm:gap-4 mt-3 sm:mt-4">
+            <Skeleton className="h-3 sm:h-4 w-20 sm:w-24" />
+            <Skeleton className="h-3 sm:h-4 w-24 sm:w-28" />
+            <Skeleton className="h-3 sm:h-4 w-20 sm:w-24" />
           </div>
           {/* STATS SKELETON */}
-          <div className="flex gap-6 mt-6">
-            {/* FOLLOWERS SKELETON */}
-            <div className="h-6 w-20 bg-secondary rounded animate-pulse" />
-            {/* FOLLOWING SKELETON */}
-            <div className="h-6 w-20 bg-secondary rounded animate-pulse" />
-            {/* PROJECTS SKELETON */}
-            <div className="h-6 w-20 bg-secondary rounded animate-pulse" />
+          <div className="flex flex-wrap gap-x-4 sm:gap-x-6 gap-y-2 mt-4 sm:mt-6">
+            <Skeleton className="h-5 sm:h-6 w-16 sm:w-20" />
+            <Skeleton className="h-5 sm:h-6 w-16 sm:w-20" />
+            <Skeleton className="h-5 sm:h-6 w-14 sm:w-18" />
+            <Skeleton className="hidden sm:block h-6 w-16" />
+            <Skeleton className="h-5 sm:h-6 w-12 sm:w-16" />
           </div>
         </div>
       </div>
