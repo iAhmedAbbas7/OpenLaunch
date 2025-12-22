@@ -230,11 +230,7 @@ export const projectMedia = pgTable(
   ]
 );
 
-// ===========================================
-// TABLE 5: PROJECT_FILES
-// GitHub synced files for code browser
-// ===========================================
-
+// <== PROJECT FILES ==>
 export const projectFiles = pgTable(
   "project_files",
   {
@@ -751,6 +747,21 @@ export const projectsRelations = relations(projects, ({ one, many }) => ({
     references: [launchSchedules.projectId],
   }),
 }));
+
+// <== PROJECT CONTRIBUTORS RELATIONS ==>
+export const projectContributorsRelations = relations(
+  projectContributors,
+  ({ one }) => ({
+    project: one(projects, {
+      fields: [projectContributors.projectId],
+      references: [projects.id],
+    }),
+    user: one(profiles, {
+      fields: [projectContributors.userId],
+      references: [profiles.id],
+    }),
+  })
+);
 
 // <== ARTICLES RELATIONS ==>
 export const articlesRelations = relations(articles, ({ one, many }) => ({
