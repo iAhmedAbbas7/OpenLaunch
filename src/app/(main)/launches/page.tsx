@@ -8,7 +8,7 @@ export const metadata: Metadata = {
   description:
     "Discover today's hottest project launches. Upvote your favorites and help developers get the recognition they deserve.",
   openGraph: {
-    title: "OpenLaunch | Launches",
+    title: "Launches | OpenLaunch",
     description:
       "Discover today's hottest project launches. Upvote your favorites and help developers get the recognition they deserve.",
   },
@@ -20,4 +20,5 @@ const LaunchesPage = () => {
   return <LaunchesPageClient />;
 };
 
+// <== EXPORTING LAUNCHES PAGE ==>
 export default LaunchesPage;
