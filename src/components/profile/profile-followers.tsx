@@ -31,7 +31,7 @@ export const ProfileFollowers = ({
   if (error) {
     // RETURN ERROR MESSAGE
     return (
-      <div className={cn("text-center py-12 text-muted-foreground", className)}>
+      <div className={cn("text-center py-8 sm:py-12 text-sm sm:text-base text-muted-foreground", className)}>
         Failed to load followers
       </div>
     );
@@ -40,15 +40,15 @@ export const ProfileFollowers = ({
   if (!data || data.items.length === 0) {
     // RETURN EMPTY MESSAGE
     return (
-      <div className={cn("text-center py-12", className)}>
-        <Users className="size-12 text-muted-foreground/50 mx-auto mb-4" />
-        <p className="text-muted-foreground">No followers yet</p>
+      <div className={cn("text-center py-8 sm:py-12", className)}>
+        <Users className="size-10 sm:size-12 text-muted-foreground/50 mx-auto mb-3 sm:mb-4" />
+        <p className="text-sm sm:text-base text-muted-foreground">No followers yet</p>
       </div>
     );
   }
   // RETURN PROFILE FOLLOWERS COMPONENT
   return (
-    <div className={cn("grid grid-cols-1 md:grid-cols-2 gap-4", className)}>
+    <div className={cn("grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4", className)}>
       {data.items.map((user) => (
         <UserCard key={user.id} user={user} showBio showReputation />
       ))}
@@ -80,7 +80,7 @@ export const ProfileFollowing = ({
   if (error) {
     // RETURN ERROR MESSAGE
     return (
-      <div className={cn("text-center py-12 text-muted-foreground", className)}>
+      <div className={cn("text-center py-8 sm:py-12 text-sm sm:text-base text-muted-foreground", className)}>
         Failed to load following
       </div>
     );
@@ -89,15 +89,15 @@ export const ProfileFollowing = ({
   if (!data || data.items.length === 0) {
     // RETURN EMPTY MESSAGE
     return (
-      <div className={cn("text-center py-12", className)}>
-        <UserCheck className="size-12 text-muted-foreground/50 mx-auto mb-4" />
-        <p className="text-muted-foreground">Not following anyone yet</p>
+      <div className={cn("text-center py-8 sm:py-12", className)}>
+        <UserCheck className="size-10 sm:size-12 text-muted-foreground/50 mx-auto mb-3 sm:mb-4" />
+        <p className="text-sm sm:text-base text-muted-foreground">Not following anyone yet</p>
       </div>
     );
   }
   // RETURN PROFILE FOLLOWING COMPONENT
   return (
-    <div className={cn("grid grid-cols-1 md:grid-cols-2 gap-4", className)}>
+    <div className={cn("grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4", className)}>
       {data.items.map((user) => (
         <UserCard key={user.id} user={user} showBio showReputation />
       ))}
@@ -113,7 +113,7 @@ export const ProfileFollowersSkeleton = ({
 }) => {
   // RETURN PROFILE FOLLOWERS SKELETON
   return (
-    <div className={cn("grid grid-cols-1 md:grid-cols-2 gap-4", className)}>
+    <div className={cn("grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4", className)}>
       {Array.from({ length: 4 }).map((_, i) => (
         <UserCardSkeleton key={i} />
       ))}
