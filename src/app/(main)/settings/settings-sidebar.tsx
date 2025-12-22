@@ -67,9 +67,9 @@ export const SettingsSidebar = () => {
   const pathname = usePathname();
   // RETURNING SETTINGS SIDEBAR
   return (
-    <Card className="w-full md:w-64 h-fit p-2 shrink-0">
+    <Card className="w-full lg:w-56 xl:w-64 h-fit p-1.5 sm:p-2 shrink-0">
       {/* NAV */}
-      <nav className="space-y-1">
+      <nav className="flex lg:flex-col gap-1 overflow-x-auto lg:overflow-x-visible scrollbar-none">
         {/* NAV ITEMS */}
         {settingsNavItems.map((item) => {
           // GET ICON
@@ -82,14 +82,14 @@ export const SettingsSidebar = () => {
               key={item.href}
               href={item.href}
               className={cn(
-                "flex items-center gap-3 px-3 py-2.5 rounded-lg transition-all duration-200",
+                "flex items-center gap-2 sm:gap-3 px-2.5 sm:px-3 py-2 sm:py-2.5 rounded-lg transition-all duration-200 whitespace-nowrap",
                 isActive
                   ? "bg-primary/10 text-primary"
                   : "hover:bg-secondary/50 text-foreground/80 hover:text-foreground"
               )}
             >
-              <Icon className="size-5 shrink-0" />
-              <span className="font-medium">{item.label}</span>
+              <Icon className="size-4 sm:size-5 shrink-0" />
+              <span className="font-medium text-sm sm:text-base">{item.label}</span>
             </Link>
           );
         })}
