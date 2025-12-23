@@ -20,6 +20,7 @@ import {
   bookmarks,
   categories,
   projectContributors,
+  projectMedia,
 } from "@/lib/db/schema";
 import type {
   ApiResponse,
@@ -429,17 +430,14 @@ export async function getProjectBySlug(
 ): Promise<ApiResponse<ProjectWithDetails>> {
   // TRY TO FETCH PROJECT
   try {
-    // FETCH PROJECT WITH MEDIA ONLY
-    const project = await db.query.projects.findFirst({
-      where: eq(projects.slug, slug),
-      with: {
-        media: {
-          orderBy: (media, { asc }) => [asc(media.displayOrder)],
-        },
-      },
-    });
+    // FETCH PROJECT WITHOUT RELATIONS (MORE ROBUST)
+    const project = await db
+      .select()
+      .from(projects)
+      .where(eq(projects.slug, slug))
+      .limit(1);
     // CHECK IF PROJECT EXISTS
-    if (!project) {
+    if (!project || project.length === 0) {
       // RETURN ERROR RESPONSE
       return {
         success: false,
@@ -449,8 +447,10 @@ export async function getProjectBySlug(
         },
       };
     }
+    // GET PROJECT DATA
+    const projectData = project[0];
     // GET OWNER PREVIEW
-    const owner = await getOwnerPreview(project.ownerId);
+    const owner = await getOwnerPreview(projectData.ownerId);
     // CHECK IF OWNER EXISTS
     if (!owner) {
       // RETURN ERROR RESPONSE
@@ -462,18 +462,24 @@ export async function getProjectBySlug(
         },
       };
     }
+    // FETCH MEDIA SEPARATELY
+    const projectMediaList = await db
+      .select()
+      .from(projectMedia)
+      .where(eq(projectMedia.projectId, projectData.id))
+      .orderBy(asc(projectMedia.displayOrder));
     // FETCH CATEGORIES
     const projectCategories =
-      project.categoryIds && project.categoryIds.length > 0
+      projectData.categoryIds && projectData.categoryIds.length > 0
         ? await db.query.categories.findMany({
-            where: inArray(categories.id, project.categoryIds),
+            where: inArray(categories.id, projectData.categoryIds),
           })
         : [];
     // FETCH CONTRIBUTORS SEPARATELY
     const contributorRecords = await db
       .select()
       .from(projectContributors)
-      .where(eq(projectContributors.projectId, project.id));
+      .where(eq(projectContributors.projectId, projectData.id));
     // FETCH USER DATA FOR CONTRIBUTORS
     const contributorsWithPreview = await Promise.all(
       contributorRecords.map(async (contributor) => {
@@ -515,9 +521,9 @@ export async function getProjectBySlug(
     }>;
     // BUILD PROJECT WITH DETAILS
     const projectWithDetails: ProjectWithDetails = {
-      ...project,
+      ...projectData,
       owner,
-      media: project.media,
+      media: projectMediaList,
       contributors: validContributors,
       categories: projectCategories,
     };
