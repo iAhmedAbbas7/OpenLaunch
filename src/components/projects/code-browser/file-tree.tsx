@@ -11,11 +11,25 @@ import {
   Search,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
-import { useState, useMemo } from "react";
+import {
+  useState,
+  useMemo,
+  useImperativeHandle,
+  forwardRef,
+  useCallback,
+} from "react";
 import { Input } from "@/components/ui/input";
 import type { FileTreeNode } from "@/lib/github/types";
 import { motion, AnimatePresence } from "framer-motion";
 import { ScrollArea } from "@/components/ui/scroll-area";
+
+// <== FILE TREE HANDLE ==>
+export interface FileTreeHandle {
+  // <== EXPAND ALL ==>
+  expandAll: () => void;
+  // <== COLLAPSE ALL ==>
+  collapseAll: () => void;
+}
 
 // <== FILE TREE PROPS ==>
 interface FileTreeProps {
@@ -30,88 +44,106 @@ interface FileTreeProps {
 }
 
 // <== FILE TREE COMPONENT ==>
-export const FileTree = ({
-  tree,
-  selectedPath,
-  onSelect,
-  className,
-}: FileTreeProps) => {
-  // STATE FOR SEARCH
-  const [search, setSearch] = useState("");
-  // FILTER TREE BY SEARCH
-  const filteredTree = useMemo(() => {
-    // IF NO SEARCH, RETURN TREE
-    if (!search) return tree;
-    // SEARCH LOWER
-    const searchLower = search.toLowerCase();
-    // <== RECURSIVE FILTER FUNCTION ==>
-    function filterNodes(nodes: FileTreeNode[]): FileTreeNode[] {
-      // REDUCE NODES
-      return nodes.reduce<FileTreeNode[]>((acc, node) => {
-        // MATCHES
-        const matches = node.name.toLowerCase().includes(searchLower);
-        // IF FOLDER, CHECK CHILDREN
-        if (node.children) {
-          // FILTER CHILDREN
-          const filteredChildren = filterNodes(node.children);
-          // IF MATCHES OR FILTERED CHILDREN HAS LENGTH, PUSH NODE
-          if (matches || filteredChildren.length > 0) {
+export const FileTree = forwardRef<FileTreeHandle, FileTreeProps>(
+  ({ tree, selectedPath, onSelect, className }, ref) => {
+    // STATE FOR SEARCH
+    const [search, setSearch] = useState("");
+    // STATE FOR GLOBAL EXPAND/COLLAPSE
+    const [expandAll, setExpandAll] = useState<boolean | null>(null);
+    // EXPOSE METHODS VIA REF
+    useImperativeHandle(ref, () => ({
+      // EXPAND ALL
+      expandAll: () => setExpandAll(true),
+      // COLLAPSE ALL
+      collapseAll: () => setExpandAll(false),
+    }));
+    // RESET EXPAND ALL STATE WHEN INDIVIDUAL FOLDER IS TOGGLED
+    const resetExpandAll = useCallback(() => {
+      // RESET EXPAND ALL STATE
+      setExpandAll(null);
+    }, []);
+    // FILTER TREE BY SEARCH
+    const filteredTree = useMemo(() => {
+      // IF NO SEARCH, RETURN TREE
+      if (!search) return tree;
+      // SEARCH LOWER
+      const searchLower = search.toLowerCase();
+      // <== RECURSIVE FILTER FUNCTION ==>
+      function filterNodes(nodes: FileTreeNode[]): FileTreeNode[] {
+        // REDUCE NODES
+        return nodes.reduce<FileTreeNode[]>((acc, node) => {
+          // MATCHES
+          const matches = node.name.toLowerCase().includes(searchLower);
+          // IF FOLDER, CHECK CHILDREN
+          if (node.children) {
+            // FILTER CHILDREN
+            const filteredChildren = filterNodes(node.children);
+            // IF MATCHES OR FILTERED CHILDREN HAS LENGTH, PUSH NODE
+            if (matches || filteredChildren.length > 0) {
+              // PUSH NODE
+              acc.push({
+                ...node,
+                children: filteredChildren,
+              });
+            }
+          } else if (matches) {
             // PUSH NODE
-            acc.push({
-              ...node,
-              children: filteredChildren,
-            });
+            acc.push(node);
           }
-        } else if (matches) {
-          // PUSH NODE
-          acc.push(node);
-        }
-        // RETURN ACCUMULATOR
-        return acc;
-      }, []);
-    }
-    // FILTER NODES
-    return filterNodes(tree);
-  }, [tree, search]);
-  // RETURNING COMPONENT
-  return (
-    <div className={cn("flex flex-col h-full", className)}>
-      {/* SEARCH */}
-      <div className="p-2 border-b">
-        <div className="relative">
-          <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 size-4 text-muted-foreground" />
-          <Input
-            placeholder="Search files..."
-            value={search}
-            onChange={(e) => setSearch(e.target.value)}
-            className="pl-8 h-8 text-sm"
-          />
+          // RETURN ACCUMULATOR
+          return acc;
+        }, []);
+      }
+      // FILTER NODES
+      return filterNodes(tree);
+    }, [tree, search]);
+    // RETURNING COMPONENT
+    return (
+      <div className={cn("flex flex-col h-full overflow-hidden", className)}>
+        {/* SEARCH */}
+        <div className="p-1.5 sm:p-2 border-b shrink-0">
+          <div className="relative">
+            <Search className="absolute left-2 sm:left-2.5 top-1/2 -translate-y-1/2 size-3.5 sm:size-4 text-muted-foreground" />
+            <Input
+              placeholder="Search files..."
+              value={search}
+              onChange={(e) => setSearch(e.target.value)}
+              className="pl-7 sm:pl-8 h-7 sm:h-8 text-xs sm:text-sm"
+            />
+          </div>
+        </div>
+        {/* TREE WITH SCROLLBAR */}
+        <div className="flex-1 min-h-0 overflow-hidden">
+          <ScrollArea className="h-full">
+            <div className="p-1.5 sm:p-2">
+              {filteredTree.length === 0 ? (
+                <p className="text-xs sm:text-sm text-muted-foreground text-center py-4">
+                  No files found
+                </p>
+              ) : (
+                filteredTree.map((node) => (
+                  <TreeNode
+                    key={node.path}
+                    node={node}
+                    depth={0}
+                    selectedPath={selectedPath}
+                    onSelect={onSelect}
+                    defaultExpanded={!!search}
+                    forceExpanded={expandAll}
+                    onToggle={resetExpandAll}
+                  />
+                ))
+              )}
+            </div>
+          </ScrollArea>
         </div>
       </div>
-      {/* TREE */}
-      <ScrollArea className="flex-1">
-        <div className="p-2">
-          {filteredTree.length === 0 ? (
-            <p className="text-sm text-muted-foreground text-center py-4">
-              No files found
-            </p>
-          ) : (
-            filteredTree.map((node) => (
-              <TreeNode
-                key={node.path}
-                node={node}
-                depth={0}
-                selectedPath={selectedPath}
-                onSelect={onSelect}
-                defaultExpanded={!!search}
-              />
-            ))
-          )}
-        </div>
-      </ScrollArea>
-    </div>
-  );
-};
+    );
+  }
+);
+
+// <== ADD DISPLAY NAME ==>
+FileTree.displayName = "FileTree";
 
 // <== TREE NODE PROPS ==>
 interface TreeNodeProps {
@@ -125,6 +157,10 @@ interface TreeNodeProps {
   onSelect: (path: string) => void;
   // <== DEFAULT EXPANDED ==>
   defaultExpanded?: boolean;
+  // <== FORCE EXPANDED (FROM PARENT) ==>
+  forceExpanded?: boolean | null;
+  // <== ON TOGGLE ==>
+  onToggle?: () => void;
 }
 
 // <== TREE NODE COMPONENT ==>
@@ -134,9 +170,13 @@ const TreeNode = ({
   selectedPath,
   onSelect,
   defaultExpanded = false,
+  forceExpanded = null,
+  onToggle,
 }: TreeNodeProps) => {
   // STATE FOR EXPANDED
-  const [isExpanded, setIsExpanded] = useState(defaultExpanded);
+  const [localExpanded, setLocalExpanded] = useState(defaultExpanded);
+  // DETERMINE IF EXPANDED (FORCE TAKES PRIORITY)
+  const isExpanded = forceExpanded !== null ? forceExpanded : localExpanded;
   // IS FOLDER
   const isFolder = node.type === "folder";
   // IS SELECTED
@@ -146,7 +186,9 @@ const TreeNode = ({
     // IF FOLDER, TOGGLE EXPANDED
     if (isFolder) {
       // TOGGLE EXPANDED
-      setIsExpanded(!isExpanded);
+      setLocalExpanded(!isExpanded);
+      // NOTIFY PARENT THAT USER MANUALLY TOGGLED
+      onToggle?.();
     } else {
       // ON SELECT
       onSelect(node.path);
@@ -160,27 +202,27 @@ const TreeNode = ({
         type="button"
         onClick={handleClick}
         className={cn(
-          "flex items-center gap-1.5 w-full px-2 py-1 rounded-sm text-sm hover:bg-secondary/50 transition-colors text-left",
+          "flex items-center gap-1 sm:gap-1.5 w-full px-1.5 sm:px-2 py-0.5 sm:py-1 rounded-sm text-xs sm:text-sm hover:bg-secondary/50 transition-colors text-left",
           isSelected && "bg-secondary text-foreground font-medium"
         )}
-        style={{ paddingLeft: `${depth * 12 + 8}px` }}
+        style={{ paddingLeft: `${depth * 10 + 6}px` }}
       >
         {/* CHEVRON */}
         {isFolder ? (
           isExpanded ? (
-            <ChevronDown className="size-4 text-muted-foreground shrink-0" />
+            <ChevronDown className="size-3.5 sm:size-4 text-muted-foreground shrink-0" />
           ) : (
-            <ChevronRight className="size-4 text-muted-foreground shrink-0" />
+            <ChevronRight className="size-3.5 sm:size-4 text-muted-foreground shrink-0" />
           )
         ) : (
-          <span className="w-4 shrink-0" />
+          <span className="w-3.5 sm:w-4 shrink-0" />
         )}
         {/* ICON */}
         {isFolder ? (
           isExpanded ? (
-            <FolderOpen className="size-4 text-amber-500 shrink-0" />
+            <FolderOpen className="size-3.5 sm:size-4 text-amber-500 shrink-0" />
           ) : (
-            <Folder className="size-4 text-amber-500 shrink-0" />
+            <Folder className="size-3.5 sm:size-4 text-amber-500 shrink-0" />
           )
         ) : (
           <FileIcon path={node.path} />
@@ -206,6 +248,8 @@ const TreeNode = ({
                 selectedPath={selectedPath}
                 onSelect={onSelect}
                 defaultExpanded={defaultExpanded}
+                forceExpanded={forceExpanded}
+                onToggle={onToggle}
               />
             ))}
           </motion.div>
@@ -292,26 +336,31 @@ const FileIcon = ({ path }: { path: string }) => {
     }
   };
   // RETURN FILE ICON
-  return <File className={cn("size-4 shrink-0", getColor())} />;
+  return <File className={cn("size-3.5 sm:size-4 shrink-0", getColor())} />;
 };
 
 // <== DETERMINISTIC SKELETON WIDTHS FOR FILE TREE ==>
-const FILE_TREE_SKELETON_WIDTHS = [75, 85, 65, 90, 70, 80, 60, 72];
+const FILE_TREE_SKELETON_WIDTHS = [75, 85, 65, 90, 70, 80, 60, 72, 55, 78];
 
 // <== FILE TREE SKELETON ==>
 export const FileTreeSkeleton = () => {
   // RETURN FILE TREE SKELETON
   return (
-    <div className="flex flex-col h-full">
-      <div className="p-2 border-b">
-        <div className="h-8 bg-secondary/50 rounded animate-pulse" />
+    <div className="flex flex-col h-full overflow-hidden">
+      {/* SEARCH BAR SKELETON */}
+      <div className="p-1.5 sm:p-2 border-b">
+        <div className="h-7 sm:h-8 bg-secondary/50 rounded animate-pulse" />
       </div>
-      <div className="p-2 space-y-1">
+      {/* TREE ITEMS SKELETON */}
+      <div className="flex-1 overflow-y-auto p-1.5 sm:p-2 space-y-0.5 sm:space-y-1">
         {FILE_TREE_SKELETON_WIDTHS.map((width, i) => (
           <div
             key={i}
-            className="h-7 bg-secondary/30 rounded animate-pulse"
-            style={{ width: `${width}%` }}
+            className="h-6 sm:h-7 bg-secondary/30 rounded animate-pulse"
+            style={{
+              width: `${width}%`,
+              marginLeft: `${[0, 0, 10, 10, 20, 0, 10, 10, 20, 0][i]}px`,
+            }}
           />
         ))}
       </div>
