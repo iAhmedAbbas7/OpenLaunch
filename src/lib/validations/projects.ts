@@ -24,13 +24,26 @@ export const createProjectSchema = z.object({
   // <== DESCRIPTION ==>
   description: z
     .string()
-    .min(50, "Description must be at least 50 characters")
     .max(10000, "Description must be 10000 characters or less")
-    .optional(),
+    .optional()
+    .refine(
+      (val) => !val || val.length === 0 || val.length >= 50,
+      "Description must be at least 50 characters if provided"
+    ),
   // <== LOGO URL ==>
-  logoUrl: z.string().url("Please enter a valid URL").optional().nullable(),
+  logoUrl: z
+    .string()
+    .url("Please enter a valid URL")
+    .optional()
+    .nullable()
+    .or(z.literal("")),
   // <== BANNER URL ==>
-  bannerUrl: z.string().url("Please enter a valid URL").optional().nullable(),
+  bannerUrl: z
+    .string()
+    .url("Please enter a valid URL")
+    .optional()
+    .nullable()
+    .or(z.literal("")),
   // <== WEBSITE URL ==>
   websiteUrl: z
     .string()
