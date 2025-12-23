@@ -763,6 +763,14 @@ export const projectContributorsRelations = relations(
   })
 );
 
+// <== PROJECT MEDIA RELATIONS ==>
+export const projectMediaRelations = relations(projectMedia, ({ one }) => ({
+  project: one(projects, {
+    fields: [projectMedia.projectId],
+    references: [projects.id],
+  }),
+}));
+
 // <== ARTICLES RELATIONS ==>
 export const articlesRelations = relations(articles, ({ one, many }) => ({
   author: one(profiles, {
