@@ -15,6 +15,26 @@ import {
   ArrowRight,
   X,
   Plus,
+  Terminal,
+  Smartphone,
+  Gamepad2,
+  Cpu,
+  Bot,
+  Palette,
+  GraduationCap,
+  Briefcase,
+  ShoppingCart,
+  Music,
+  Video,
+  Camera,
+  Headphones,
+  Heart,
+  Shield,
+  Cloud,
+  Database,
+  Server,
+  Code,
+  type LucideIcon,
 } from "lucide-react";
 import {
   Select,
@@ -40,8 +60,34 @@ import { Switch } from "@/components/ui/switch";
 import { Textarea } from "@/components/ui/textarea";
 import { useForm, useWatch } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
+import { toast } from "sonner";
 import type { Project, Category } from "@/lib/db/schema";
 import { useCreateProject, useUpdateProject } from "@/hooks/use-projects";
+
+// <== ICON MAP FOR CATEGORIES ==>
+const CATEGORY_ICONS: Record<string, LucideIcon> = {
+  Globe,
+  Terminal,
+  Smartphone,
+  Gamepad2,
+  Cpu,
+  Bot,
+  Palette,
+  GraduationCap,
+  Briefcase,
+  ShoppingCart,
+  Music,
+  Video,
+  Camera,
+  Headphones,
+  Heart,
+  Shield,
+  Cloud,
+  Database,
+  Server,
+  Code,
+  Tags,
+};
 
 // <== FORM VALUES TYPE ==>
 type FormValues = z.input<typeof createProjectSchema>;
@@ -198,8 +244,20 @@ export const ProjectForm = ({
   };
   // <== HANDLE SUBMIT ==>
   const onSubmit = (data: FormValues) => {
-    // PARSE DATA THROUGH SCHEMA TO GET OUTPUT TYPE
-    const parsedData = createProjectSchema.parse(data);
+    // PARSE DATA THROUGH SCHEMA SAFELY
+    const parseResult = createProjectSchema.safeParse(data);
+    // CHECK IF PARSING FAILED
+    if (!parseResult.success) {
+      // GET FIRST ERROR MESSAGE
+      const firstError = parseResult.error.issues[0];
+      // SHOW ERROR TOAST WITH FIELD INFO
+      toast.error(`${firstError.path.join(".")}: ${firstError.message}`);
+      // LOG ALL ERRORS FOR DEBUGGING
+      console.error("Validation errors:", parseResult.error.issues);
+      return;
+    }
+    // GET PARSED DATA
+    const parsedData = parseResult.data;
     // CHECK IF PROJECT IS EDITING AND PROJECT EXISTS
     if (isEditing && project) {
       // UPDATE PROJECT WITH NEW DATA
@@ -228,8 +286,8 @@ export const ProjectForm = ({
   return (
     <div className={cn("max-w-3xl mx-auto", className)}>
       {/* PROGRESS INDICATOR */}
-      <div className="mb-8">
-        <div className="flex items-center justify-between mb-4">
+      <div className="mb-6 sm:mb-8">
+        <div className="flex items-center justify-between mb-3 sm:mb-4">
           {STEPS.map((step, index) => (
             <div key={step.id} className="flex items-center">
               {/* STEP INDICATOR */}
@@ -238,7 +296,7 @@ export const ProjectForm = ({
                 onClick={() => currentStep > step.id && setCurrentStep(step.id)}
                 disabled={currentStep < step.id}
                 className={cn(
-                  "flex items-center justify-center size-10 rounded-full font-semibold transition-colors",
+                  "flex items-center justify-center size-8 sm:size-10 rounded-full font-semibold text-sm sm:text-base transition-colors",
                   currentStep === step.id
                     ? "bg-primary text-primary-foreground"
                     : currentStep > step.id
@@ -246,13 +304,17 @@ export const ProjectForm = ({
                     : "bg-secondary text-muted-foreground"
                 )}
               >
-                {currentStep > step.id ? <Check className="size-5" /> : step.id}
+                {currentStep > step.id ? (
+                  <Check className="size-4 sm:size-5" />
+                ) : (
+                  step.id
+                )}
               </button>
               {/* CONNECTOR */}
               {index < STEPS.length - 1 && (
                 <div
                   className={cn(
-                    "w-12 md:w-24 h-1 mx-2 rounded",
+                    "w-8 sm:w-12 md:w-24 h-0.5 sm:h-1 mx-1.5 sm:mx-2 rounded",
                     currentStep > step.id ? "bg-primary/50" : "bg-secondary"
                   )}
                 />
@@ -262,27 +324,39 @@ export const ProjectForm = ({
         </div>
         {/* STEP INFO */}
         <div className="text-center">
-          <h2 className="text-lg font-semibold">
+          <h2 className="text-base sm:text-lg font-semibold">
             {STEPS[currentStep - 1].title}
           </h2>
-          <p className="text-sm text-muted-foreground">
+          <p className="text-xs sm:text-sm text-muted-foreground">
             {STEPS[currentStep - 1].description}
           </p>
         </div>
       </div>
       {/* FORM */}
-      <form onSubmit={form.handleSubmit(onSubmit)}>
+      <form
+        onSubmit={form.handleSubmit(onSubmit, (errors) => {
+          // LOG FORM VALIDATION ERRORS
+          console.error("Form validation errors:", errors);
+          // GET FIRST ERROR
+          const firstError = Object.entries(errors)[0];
+          if (firstError) {
+            const [field, error] = firstError;
+            toast.error(`${field}: ${error?.message || "Invalid value"}`);
+          }
+        })}
+      >
         {/* STEP 1: BASIC INFO */}
         {currentStep === 1 && (
-          <Card className="p-6 space-y-6">
+          <Card className="p-4 sm:p-6 space-y-4 sm:space-y-6">
             {/* NAME */}
-            <div className="space-y-2">
-              <Label htmlFor="name">
+            <div className="space-y-1.5 sm:space-y-2">
+              <Label htmlFor="name" className="text-xs sm:text-sm">
                 Project Name <span className="text-destructive">*</span>
               </Label>
               <Input
                 id="name"
                 placeholder="My Awesome Project"
+                className="h-9 sm:h-10 text-sm sm:text-base"
                 {...form.register("name")}
               />
               {errors.name && (
@@ -292,14 +366,15 @@ export const ProjectForm = ({
               )}
             </div>
             {/* TAGLINE */}
-            <div className="space-y-2">
-              <Label htmlFor="tagline">
+            <div className="space-y-1.5 sm:space-y-2">
+              <Label htmlFor="tagline" className="text-xs sm:text-sm">
                 Tagline <span className="text-destructive">*</span>
               </Label>
               <Input
                 id="tagline"
                 placeholder="A short description of your project"
                 maxLength={140}
+                className="h-9 sm:h-10 text-sm sm:text-base"
                 {...form.register("tagline")}
               />
               <p className="text-xs text-muted-foreground">
@@ -312,12 +387,15 @@ export const ProjectForm = ({
               )}
             </div>
             {/* DESCRIPTION */}
-            <div className="space-y-2">
-              <Label htmlFor="description">Description</Label>
+            <div className="space-y-1.5 sm:space-y-2">
+              <Label htmlFor="description" className="text-xs sm:text-sm">
+                Description
+              </Label>
               <Textarea
                 id="description"
                 placeholder="Tell us more about your project. What problem does it solve? What makes it unique?"
-                rows={8}
+                rows={6}
+                className="text-sm sm:text-base sm:min-h-[160px]"
                 {...form.register("description")}
               />
               <p className="text-xs text-muted-foreground">
@@ -333,17 +411,21 @@ export const ProjectForm = ({
         )}
         {/* STEP 2: LINKS */}
         {currentStep === 2 && (
-          <Card className="p-6 space-y-6">
+          <Card className="p-4 sm:p-6 space-y-4 sm:space-y-6">
             {/* WEBSITE URL */}
-            <div className="space-y-2">
-              <Label htmlFor="websiteUrl" className="flex items-center gap-2">
-                <Globe className="size-4" />
+            <div className="space-y-1.5 sm:space-y-2">
+              <Label
+                htmlFor="websiteUrl"
+                className="flex items-center gap-1.5 sm:gap-2 text-xs sm:text-sm"
+              >
+                <Globe className="size-3.5 sm:size-4" />
                 Website URL
               </Label>
               <Input
                 id="websiteUrl"
                 type="url"
                 placeholder="https://myproject.com"
+                className="h-9 sm:h-10 text-sm sm:text-base"
                 {...form.register("websiteUrl")}
               />
               {errors.websiteUrl && (
@@ -353,15 +435,19 @@ export const ProjectForm = ({
               )}
             </div>
             {/* GITHUB URL */}
-            <div className="space-y-2">
-              <Label htmlFor="githubUrl" className="flex items-center gap-2">
-                <Github className="size-4" />
+            <div className="space-y-1.5 sm:space-y-2">
+              <Label
+                htmlFor="githubUrl"
+                className="flex items-center gap-1.5 sm:gap-2 text-xs sm:text-sm"
+              >
+                <Github className="size-3.5 sm:size-4" />
                 GitHub URL
               </Label>
               <Input
                 id="githubUrl"
                 type="url"
                 placeholder="https://github.com/username/repo"
+                className="h-9 sm:h-10 text-sm sm:text-base"
                 {...form.register("githubUrl")}
               />
               {errors.githubUrl && (
@@ -371,15 +457,19 @@ export const ProjectForm = ({
               )}
             </div>
             {/* DEMO URL */}
-            <div className="space-y-2">
-              <Label htmlFor="demoUrl" className="flex items-center gap-2">
-                <ExternalLink className="size-4" />
+            <div className="space-y-1.5 sm:space-y-2">
+              <Label
+                htmlFor="demoUrl"
+                className="flex items-center gap-1.5 sm:gap-2 text-xs sm:text-sm"
+              >
+                <ExternalLink className="size-3.5 sm:size-4" />
                 Demo URL
               </Label>
               <Input
                 id="demoUrl"
                 type="url"
                 placeholder="https://demo.myproject.com"
+                className="h-9 sm:h-10 text-sm sm:text-base"
                 {...form.register("demoUrl")}
               />
               {errors.demoUrl && (
@@ -389,16 +479,16 @@ export const ProjectForm = ({
               )}
             </div>
             {/* IS OPEN SOURCE */}
-            <div className="flex items-center justify-between py-3 px-4 rounded-lg bg-secondary/50">
+            <div className="flex items-center justify-between py-2.5 sm:py-3 px-3 sm:px-4 rounded-lg bg-secondary/50">
               <div>
                 <Label
                   htmlFor="isOpenSource"
-                  className="flex items-center gap-2"
+                  className="flex items-center gap-1.5 sm:gap-2 text-xs sm:text-sm"
                 >
-                  <Github className="size-4" />
+                  <Github className="size-3.5 sm:size-4" />
                   Open Source
                 </Label>
-                <p className="text-sm text-muted-foreground mt-1">
+                <p className="text-xs sm:text-sm text-muted-foreground mt-0.5 sm:mt-1">
                   Is your project open source?
                 </p>
               </div>
@@ -412,13 +502,15 @@ export const ProjectForm = ({
             </div>
             {/* LICENSE (CONDITIONAL) */}
             {watchedValues.isOpenSource && (
-              <div className="space-y-2">
-                <Label htmlFor="license">License</Label>
+              <div className="space-y-1.5 sm:space-y-2">
+                <Label htmlFor="license" className="text-xs sm:text-sm">
+                  License
+                </Label>
                 <Select
                   value={watchedValues.license ?? ""}
                   onValueChange={(value) => form.setValue("license", value)}
                 >
-                  <SelectTrigger>
+                  <SelectTrigger className="h-9 sm:h-10 text-sm sm:text-base">
                     <SelectValue placeholder="Select a license" />
                   </SelectTrigger>
                   <SelectContent>
@@ -438,28 +530,30 @@ export const ProjectForm = ({
         )}
         {/* STEP 3: DETAILS */}
         {currentStep === 3 && (
-          <Card className="p-6 space-y-6">
+          <Card className="p-4 sm:p-6 space-y-4 sm:space-y-6">
             {/* TECH STACK */}
-            <div className="space-y-2">
-              <Label className="flex items-center gap-2">
-                <Tags className="size-4" />
+            <div className="space-y-1.5 sm:space-y-2">
+              <Label className="flex items-center gap-1.5 sm:gap-2 text-xs sm:text-sm">
+                <Tags className="size-3.5 sm:size-4" />
                 Tech Stack
               </Label>
-              <div className="flex gap-2">
+              <div className="flex gap-1.5 sm:gap-2">
                 <Input
-                  placeholder="Add technology (e.g., React, Node.js)"
+                  placeholder="Add technology (e.g., React)"
                   value={techInput}
                   onChange={(e) => setTechInput(e.target.value)}
                   onKeyDown={handleTechKeyDown}
                   maxLength={50}
+                  className="h-9 sm:h-10 text-sm sm:text-base"
                 />
                 <Button
                   type="button"
                   variant="outline"
                   onClick={handleAddTech}
                   disabled={!techInput.trim() || techStack.length >= 20}
+                  className="h-9 sm:h-10 px-2.5 sm:px-3"
                 >
-                  <Plus className="size-4" />
+                  <Plus className="size-3.5 sm:size-4" />
                 </Button>
               </div>
               <p className="text-xs text-muted-foreground">
@@ -467,22 +561,22 @@ export const ProjectForm = ({
               </p>
               {/* TECH TAGS */}
               {techStack.length > 0 && (
-                <div className="flex flex-wrap gap-2 mt-2">
+                <div className="flex flex-wrap gap-1.5 sm:gap-2 mt-1.5 sm:mt-2">
                   {techStack.map((tech) => (
                     <Badge
                       key={tech}
                       variant="secondary"
-                      className="gap-1 pr-1"
+                      className="gap-0.5 sm:gap-1 pr-0.5 sm:pr-1 text-xs sm:text-sm"
                     >
                       {tech}
                       <Button
                         type="button"
                         variant="ghost"
                         size="icon"
-                        className="size-4 hover:bg-transparent"
+                        className="size-3.5 sm:size-4 hover:bg-transparent"
                         onClick={() => handleRemoveTech(tech)}
                       >
-                        <X className="size-3" />
+                        <X className="size-2.5 sm:size-3" />
                       </Button>
                     </Badge>
                   ))}
@@ -491,9 +585,11 @@ export const ProjectForm = ({
             </div>
             {/* CATEGORIES */}
             {categories.length > 0 && (
-              <div className="space-y-2">
-                <Label>Categories (Select up to 3)</Label>
-                <div className="flex flex-wrap gap-2">
+              <div className="space-y-1.5 sm:space-y-2">
+                <Label className="text-xs sm:text-sm">
+                  Categories (Select up to 3)
+                </Label>
+                <div className="flex flex-wrap gap-1.5 sm:gap-2">
                   {categories.map((category) => {
                     const isSelected = categoryIds.includes(category.id);
                     return (
@@ -501,7 +597,7 @@ export const ProjectForm = ({
                         key={category.id}
                         variant={isSelected ? "default" : "outline"}
                         className={cn(
-                          "cursor-pointer transition-colors",
+                          "cursor-pointer transition-colors text-xs sm:text-sm",
                           isSelected && "bg-primary text-primary-foreground",
                           !isSelected &&
                             categoryIds.length >= 3 &&
@@ -509,9 +605,14 @@ export const ProjectForm = ({
                         )}
                         onClick={() => handleToggleCategory(category.id)}
                       >
-                        {category.icon && (
-                          <span className="mr-1">{category.icon}</span>
-                        )}
+                        {category.icon &&
+                          CATEGORY_ICONS[category.icon] &&
+                          (() => {
+                            const IconComponent = CATEGORY_ICONS[category.icon];
+                            return (
+                              <IconComponent className="size-2.5 sm:size-3 mr-0.5 sm:mr-1" />
+                            );
+                          })()}
                         {category.name}
                       </Badge>
                     );
@@ -526,17 +627,21 @@ export const ProjectForm = ({
         )}
         {/* STEP 4: LAUNCH */}
         {currentStep === 4 && (
-          <Card className="p-6 space-y-6">
+          <Card className="p-4 sm:p-6 space-y-4 sm:space-y-6">
             {/* LAUNCH DATE */}
-            <div className="space-y-2">
-              <Label htmlFor="launchDate" className="flex items-center gap-2">
-                <Calendar className="size-4" />
+            <div className="space-y-1.5 sm:space-y-2">
+              <Label
+                htmlFor="launchDate"
+                className="flex items-center gap-1.5 sm:gap-2 text-xs sm:text-sm"
+              >
+                <Calendar className="size-3.5 sm:size-4" />
                 Launch Date
               </Label>
               <Input
                 id="launchDate"
                 type="date"
                 min={new Date().toISOString().split("T")[0]}
+                className="h-9 sm:h-10 text-sm sm:text-base"
                 value={
                   watchedValues.launchDate instanceof Date
                     ? watchedValues.launchDate.toISOString().split("T")[0]
@@ -556,8 +661,8 @@ export const ProjectForm = ({
               </p>
             </div>
             {/* STATUS */}
-            <div className="space-y-2">
-              <Label>Status</Label>
+            <div className="space-y-1.5 sm:space-y-2">
+              <Label className="text-xs sm:text-sm">Status</Label>
               <Select
                 value={watchedValues.status ?? "draft"}
                 onValueChange={(value) =>
@@ -567,25 +672,25 @@ export const ProjectForm = ({
                   )
                 }
               >
-                <SelectTrigger>
+                <SelectTrigger className="h-9 sm:h-10 text-sm sm:text-base">
                   <SelectValue placeholder="Select status" />
                 </SelectTrigger>
                 <SelectContent>
                   <SelectItem value="draft">
-                    <div className="flex items-center gap-2">
-                      <div className="size-2 rounded-full bg-secondary" />
+                    <div className="flex items-center gap-1.5 sm:gap-2">
+                      <div className="size-1.5 sm:size-2 rounded-full bg-secondary" />
                       Draft
                     </div>
                   </SelectItem>
                   <SelectItem value="pending">
-                    <div className="flex items-center gap-2">
-                      <div className="size-2 rounded-full bg-yellow-500" />
+                    <div className="flex items-center gap-1.5 sm:gap-2">
+                      <div className="size-1.5 sm:size-2 rounded-full bg-yellow-500" />
                       Pending Review
                     </div>
                   </SelectItem>
                   <SelectItem value="launched">
-                    <div className="flex items-center gap-2">
-                      <div className="size-2 rounded-full bg-green-500" />
+                    <div className="flex items-center gap-1.5 sm:gap-2">
+                      <div className="size-1.5 sm:size-2 rounded-full bg-green-500" />
                       Launch Now
                     </div>
                   </SelectItem>
@@ -593,9 +698,11 @@ export const ProjectForm = ({
               </Select>
             </div>
             {/* SUMMARY */}
-            <div className="rounded-lg bg-secondary/50 p-4 space-y-3">
-              <h4 className="font-medium">Project Summary</h4>
-              <div className="space-y-2 text-sm">
+            <div className="rounded-lg bg-secondary/50 p-3 sm:p-4 space-y-2 sm:space-y-3">
+              <h4 className="font-medium text-sm sm:text-base">
+                Project Summary
+              </h4>
+              <div className="space-y-1.5 sm:space-y-2 text-xs sm:text-sm">
                 <p>
                   <span className="text-muted-foreground">Name:</span>{" "}
                   {watchedValues.name || "Not set"}
@@ -622,34 +729,53 @@ export const ProjectForm = ({
           </Card>
         )}
         {/* NAVIGATION */}
-        <div className="flex items-center justify-between mt-6">
+        <div className="flex items-center justify-between mt-4 sm:mt-6">
           {/* BACK BUTTON */}
           <Button
             type="button"
             variant="outline"
             onClick={handlePrevious}
             disabled={currentStep === 1}
+            className="h-9 sm:h-10 text-xs sm:text-sm px-3 sm:px-4"
           >
-            <ArrowLeft className="size-4 mr-2" />
+            <ArrowLeft className="size-3.5 sm:size-4 mr-1.5 sm:mr-2" />
             Back
           </Button>
           {/* NEXT/SUBMIT BUTTON */}
           {currentStep < 4 ? (
-            <Button type="button" onClick={handleNext}>
+            <Button
+              type="button"
+              onClick={handleNext}
+              className="h-9 sm:h-10 text-xs sm:text-sm px-3 sm:px-4"
+            >
               Next
-              <ArrowRight className="size-4 ml-2" />
+              <ArrowRight className="size-3.5 sm:size-4 ml-1.5 sm:ml-2" />
             </Button>
           ) : (
-            <Button type="submit" disabled={isSubmitting}>
+            <Button
+              type="submit"
+              disabled={isSubmitting}
+              className="h-9 sm:h-10 text-xs sm:text-sm px-3 sm:px-4"
+            >
               {isSubmitting ? (
                 <>
-                  <Loader2 className="size-4 mr-2 animate-spin" />
-                  {isEditing ? "Updating..." : "Creating..."}
+                  <Loader2 className="size-3.5 sm:size-4 mr-1.5 sm:mr-2 animate-spin" />
+                  <span className="hidden sm:inline">
+                    {isEditing ? "Updating..." : "Creating..."}
+                  </span>
+                  <span className="sm:hidden">
+                    {isEditing ? "Updating" : "Creating"}
+                  </span>
                 </>
               ) : (
                 <>
-                  <Rocket className="size-4 mr-2" />
-                  {isEditing ? "Update Project" : "Create Project"}
+                  <Rocket className="size-3.5 sm:size-4 mr-1.5 sm:mr-2" />
+                  <span className="hidden sm:inline">
+                    {isEditing ? "Update Project" : "Create Project"}
+                  </span>
+                  <span className="sm:hidden">
+                    {isEditing ? "Update" : "Create"}
+                  </span>
                 </>
               )}
             </Button>
