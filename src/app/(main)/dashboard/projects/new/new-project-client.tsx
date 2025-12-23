@@ -14,50 +14,41 @@ export const NewProjectClient = () => {
   const { data: categories } = useCategories();
   // RETURN NEW PROJECT CLIENT COMPONENT
   return (
-    <div className="min-h-screen pb-16">
+    <div className="container max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-20 sm:pt-24 pb-8 sm:pb-12">
+      {/* BACK LINK */}
+      <Link
+        href="/dashboard/projects"
+        className="inline-flex items-center gap-2 text-xs sm:text-sm text-muted-foreground hover:text-foreground transition-colors mb-4 sm:mb-6"
+      >
+        <ArrowLeft className="size-3.5 sm:size-4" />
+        Back to My Projects
+      </Link>
       {/* HEADER */}
-      <section className="py-8 border-b border-border/50">
-        <div className="container mx-auto px-4">
-          {/* BACK LINK */}
-          <Link
-            href="/dashboard/projects"
-            className="inline-flex items-center gap-2 text-sm text-muted-foreground hover:text-foreground transition-colors mb-4"
-          >
-            <ArrowLeft className="size-4" />
-            Back to My Projects
-          </Link>
-          {/* TITLE */}
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            className="flex items-center gap-4"
-          >
-            <div className="p-3 rounded-xl bg-primary/10">
-              <Rocket className="size-6 text-primary" />
-            </div>
-            <div>
-              <h1 className="text-2xl md:text-3xl font-bold font-heading">
-                Create New Project
-              </h1>
-              <p className="text-muted-foreground">
-                Share your project with the developer community
-              </p>
-            </div>
-          </motion.div>
+      <motion.div
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        className="flex items-center gap-3 sm:gap-4 mb-6 sm:mb-8"
+      >
+        <div className="size-10 sm:size-12 rounded-xl bg-primary/10 flex items-center justify-center shrink-0">
+          <Rocket className="size-5 sm:size-6 text-primary" />
         </div>
-      </section>
+        <div>
+          <h1 className="text-xl sm:text-2xl md:text-3xl font-bold font-heading">
+            Create New Project
+          </h1>
+          <p className="text-xs sm:text-sm text-muted-foreground">
+            Share your project with the developer community
+          </p>
+        </div>
+      </motion.div>
       {/* FORM */}
-      <section className="py-8">
-        <div className="container mx-auto px-4">
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.1 }}
-          >
-            <ProjectForm categories={categories ?? []} />
-          </motion.div>
-        </div>
-      </section>
+      <motion.div
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ delay: 0.1 }}
+      >
+        <ProjectForm categories={categories ?? []} />
+      </motion.div>
     </div>
   );
 };
