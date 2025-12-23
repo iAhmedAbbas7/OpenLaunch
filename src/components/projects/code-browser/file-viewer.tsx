@@ -10,14 +10,27 @@ import {
 } from "@/components/ui/tooltip";
 import Image from "next/image";
 import { toast } from "sonner";
-import { useState } from "react";
+import React, { useState } from "react";
 import { Badge } from "@/components/ui/badge";
 import { cn, formatNumber } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
-import { Skeleton } from "@/components/ui/skeleton";
 import { SyntaxHighlighter } from "./syntax-highlighter";
+
+// <== CUSTOM SKELETON COMPONENT ==>
+const Skeleton = ({
+  className,
+  ...props
+}: React.HTMLAttributes<HTMLDivElement>) => {
+  // RETURNING SKELETON COMPONENT
+  return (
+    <div
+      className={cn("bg-secondary animate-pulse rounded", className)}
+      {...props}
+    />
+  );
+};
 import { isBinaryFile, isImageFile } from "@/lib/github/files";
-import { Copy, Check, ExternalLink, File, AlertCircle } from "lucide-react";
+import { Copy, Check, ExternalLink, File, AlertCircle, X } from "lucide-react";
 
 // <== DETERMINISTIC SKELETON WIDTHS ==>
 const SKELETON_WIDTHS = [
@@ -40,6 +53,8 @@ interface FileViewerProps {
   githubUrl?: string | null;
   // <== CLASS NAME ==>
   className?: string;
+  // <== ON CLOSE ==>
+  onClose?: () => void;
 }
 
 // <== FILE VIEWER COMPONENT ==>
@@ -51,6 +66,7 @@ export const FileViewer = ({
   error,
   githubUrl,
   className,
+  onClose,
 }: FileViewerProps) => {
   // STATE FOR COPIED
   const [copied, setCopied] = useState(false);
@@ -90,8 +106,8 @@ export const FileViewer = ({
           className
         )}
       >
-        <File className="size-12 mb-4 opacity-50" />
-        <p className="text-sm">Select a file to view its contents</p>
+        <File className="size-10 sm:size-12 mb-3 sm:mb-4 opacity-50" />
+        <p className="text-xs sm:text-sm">Select a file to view its contents</p>
       </div>
     );
   }
@@ -101,14 +117,22 @@ export const FileViewer = ({
     return (
       <div className={cn("flex flex-col h-full", className)}>
         {/* HEADER */}
-        <div className="flex items-center justify-between p-3 border-b">
-          <Skeleton className="h-5 w-48" />
-          <Skeleton className="h-8 w-20" />
+        <div className="flex items-center justify-between p-2 sm:p-3 border-b">
+          <Skeleton className="h-4 sm:h-5 w-32 sm:w-48" />
+          <div className="flex items-center gap-1">
+            <Skeleton className="size-6 sm:size-7" />
+            <Skeleton className="size-6 sm:size-7" />
+            <Skeleton className="size-6 sm:size-7" />
+          </div>
         </div>
         {/* CONTENT */}
-        <div className="flex-1 p-4 space-y-2">
+        <div className="flex-1 p-3 sm:p-4 space-y-1.5 sm:space-y-2">
           {SKELETON_WIDTHS.map((width, i) => (
-            <Skeleton key={i} className="h-4" style={{ width: `${width}%` }} />
+            <Skeleton
+              key={i}
+              className="h-3 sm:h-4"
+              style={{ width: `${width}%` }}
+            />
           ))}
         </div>
       </div>
@@ -120,12 +144,12 @@ export const FileViewer = ({
     return (
       <div
         className={cn(
-          "flex flex-col items-center justify-center h-full text-muted-foreground",
+          "flex flex-col items-center justify-center h-full text-muted-foreground p-4",
           className
         )}
       >
-        <AlertCircle className="size-12 mb-4 text-destructive" />
-        <p className="text-sm text-center max-w-sm">{error}</p>
+        <AlertCircle className="size-10 sm:size-12 mb-3 sm:mb-4 text-destructive" />
+        <p className="text-xs sm:text-sm text-center max-w-sm">{error}</p>
       </div>
     );
   }
@@ -139,24 +163,27 @@ export const FileViewer = ({
           path={path}
           language={language}
           githubFileUrl={getGitHubFileUrl()}
+          onClose={onClose}
         />
         {/* CONTENT */}
         <div className="flex-1 flex flex-col items-center justify-center text-muted-foreground">
           {isImageFile(path) && githubUrl ? (
-            <div className="relative p-8">
+            <div className="relative p-4 sm:p-8">
               <Image
                 src={`${githubUrl}/raw/main/${path}`}
                 alt={path}
                 width={400}
                 height={400}
-                className="max-w-full max-h-[400px] w-auto h-auto rounded-lg border object-contain"
+                className="max-w-full max-h-[300px] sm:max-h-[400px] w-auto h-auto rounded-lg border object-contain"
                 unoptimized
               />
             </div>
           ) : (
             <>
-              <File className="size-12 mb-4 opacity-50" />
-              <p className="text-sm">Binary file cannot be displayed</p>
+              <File className="size-10 sm:size-12 mb-3 sm:mb-4 opacity-50" />
+              <p className="text-xs sm:text-sm">
+                Binary file cannot be displayed
+              </p>
             </>
           )}
         </div>
@@ -174,6 +201,7 @@ export const FileViewer = ({
         githubFileUrl={getGitHubFileUrl()}
         onCopy={handleCopy}
         copied={copied}
+        onClose={onClose}
       />
       {/* CONTENT */}
       <div className="flex-1 overflow-hidden">
@@ -201,6 +229,8 @@ interface FileViewerHeaderProps {
   onCopy?: () => void;
   // <== COPIED ==>
   copied?: boolean;
+  // <== ON CLOSE ==>
+  onClose?: () => void;
 }
 
 // <== FILE VIEWER HEADER ==>
@@ -211,28 +241,34 @@ const FileViewerHeader = ({
   githubFileUrl,
   onCopy,
   copied,
+  onClose,
 }: FileViewerHeaderProps) => {
   // GET FILE NAME
   const fileName = path.split("/").pop() || path;
   // RETURNING COMPONENT
   return (
-    <div className="flex items-center justify-between p-3 border-b bg-secondary/20">
+    <div className="flex items-center justify-between p-2 sm:p-3 border-b bg-secondary/20">
       {/* FILE INFO */}
-      <div className="flex items-center gap-2 min-w-0">
-        <span className="font-mono text-sm truncate">{fileName}</span>
+      <div className="flex items-center gap-1.5 sm:gap-2 min-w-0">
+        <span className="font-mono text-xs sm:text-sm truncate">
+          {fileName}
+        </span>
         {language && (
-          <Badge variant="secondary" className="text-xs capitalize">
+          <Badge
+            variant="secondary"
+            className="text-[10px] sm:text-xs capitalize hidden sm:inline-flex"
+          >
             {language}
           </Badge>
         )}
         {lineCount && (
-          <span className="text-xs text-muted-foreground">
+          <span className="text-[10px] sm:text-xs text-muted-foreground hidden sm:inline">
             {formatNumber(lineCount)} lines
           </span>
         )}
       </div>
       {/* ACTIONS */}
-      <div className="flex items-center gap-1">
+      <div className="flex items-center gap-0.5 sm:gap-1">
         {onCopy && (
           <TooltipProvider>
             <Tooltip>
@@ -240,13 +276,13 @@ const FileViewerHeader = ({
                 <Button
                   variant="ghost"
                   size="sm"
-                  className="h-7 w-7 p-0"
+                  className="h-6 w-6 sm:h-7 sm:w-7 p-0"
                   onClick={onCopy}
                 >
                   {copied ? (
-                    <Check className="size-4 text-green-500" />
+                    <Check className="size-3.5 sm:size-4 text-green-500" />
                   ) : (
-                    <Copy className="size-4" />
+                    <Copy className="size-3.5 sm:size-4" />
                   )}
                 </Button>
               </TooltipTrigger>
@@ -263,7 +299,7 @@ const FileViewerHeader = ({
                 <Button
                   variant="ghost"
                   size="sm"
-                  className="h-7 w-7 p-0"
+                  className="h-6 w-6 sm:h-7 sm:w-7 p-0"
                   asChild
                 >
                   <a
@@ -271,12 +307,32 @@ const FileViewerHeader = ({
                     target="_blank"
                     rel="noopener noreferrer"
                   >
-                    <ExternalLink className="size-4" />
+                    <ExternalLink className="size-3.5 sm:size-4" />
                   </a>
                 </Button>
               </TooltipTrigger>
               <TooltipContent>
                 <p>View on GitHub</p>
+              </TooltipContent>
+            </Tooltip>
+          </TooltipProvider>
+        )}
+        {/* CLOSE BUTTON */}
+        {onClose && (
+          <TooltipProvider>
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  className="h-6 w-6 sm:h-7 sm:w-7 p-0"
+                  onClick={onClose}
+                >
+                  <X className="size-3.5 sm:size-4" />
+                </Button>
+              </TooltipTrigger>
+              <TooltipContent>
+                <p>Close file</p>
               </TooltipContent>
             </Tooltip>
           </TooltipProvider>
@@ -291,13 +347,35 @@ export const FileViewerSkeleton = () => {
   // RETURNING COMPONENT
   return (
     <div className="flex flex-col h-full">
-      <div className="flex items-center justify-between p-3 border-b">
-        <Skeleton className="h-5 w-48" />
-        <Skeleton className="h-8 w-20" />
+      {/* EMPTY STATE - NO FILE SELECTED */}
+      <div className="flex-1 flex flex-col items-center justify-center">
+        <Skeleton className="size-10 sm:size-12 mb-3 sm:mb-4" />
+        <Skeleton className="h-3 sm:h-4 w-36 sm:w-48" />
       </div>
-      <div className="flex-1 p-4 space-y-2">
+    </div>
+  );
+};
+
+// <== FILE VIEWER CONTENT SKELETON ==>
+export const FileViewerContentSkeleton = () => {
+  // RETURNING COMPONENT
+  return (
+    <div className="flex flex-col h-full">
+      <div className="flex items-center justify-between p-2 sm:p-3 border-b bg-secondary/20">
+        <Skeleton className="h-4 sm:h-5 w-32 sm:w-48" />
+        <div className="flex items-center gap-0.5 sm:gap-1">
+          <Skeleton className="size-6 sm:size-7" />
+          <Skeleton className="size-6 sm:size-7" />
+          <Skeleton className="size-6 sm:size-7" />
+        </div>
+      </div>
+      <div className="flex-1 p-3 sm:p-4 space-y-1.5 sm:space-y-2">
         {SKELETON_WIDTHS.map((width, i) => (
-          <Skeleton key={i} className="h-4" style={{ width: `${width}%` }} />
+          <Skeleton
+            key={i}
+            className="h-3 sm:h-4"
+            style={{ width: `${width}%` }}
+          />
         ))}
       </div>
     </div>
