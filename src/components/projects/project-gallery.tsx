@@ -9,7 +9,7 @@ import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import type { ProjectMedia } from "@/lib/db/schema";
 import { Dialog, DialogContent } from "@/components/ui/dialog";
-import { ChevronLeft, ChevronRight, X, Play, ImageIcon } from "lucide-react";
+import { ChevronLeft, ChevronRight, X, Play, ImageIcon, Images } from "lucide-react";
 
 // <== PROJECT GALLERY PROPS ==>
 interface ProjectGalleryProps {
@@ -59,9 +59,14 @@ export const ProjectGallery = ({ media, className }: ProjectGalleryProps) => {
   return (
     <>
       {/* GALLERY GRID */}
-      <Card className={cn("p-4 md:p-6", className)}>
-        <h3 className="font-semibold mb-4">Screenshots</h3>
-        <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3">
+      <Card className={cn("p-4 sm:p-6", className)}>
+        <h3 className="text-base sm:text-lg font-semibold mb-3 sm:mb-4 flex items-center gap-2">
+          <div className="size-7 sm:size-8 rounded-lg bg-primary/10 flex items-center justify-center shrink-0">
+            <Images className="size-3.5 sm:size-4 text-primary" />
+          </div>
+          Screenshots
+        </h3>
+        <div className="grid grid-cols-2 sm:grid-cols-3 gap-2 sm:gap-3">
           {media.map((item, index) => (
             <button
               key={item.id}
@@ -78,22 +83,22 @@ export const ProjectGallery = ({ media, className }: ProjectGalleryProps) => {
                   src={item.url}
                   alt={item.caption ?? `Screenshot ${index + 1}`}
                   fill
-                  sizes="(max-width: 768px) 50vw, (max-width: 1024px) 33vw, 25vw"
+                  sizes="(max-width: 640px) 50vw, (max-width: 1024px) 33vw, 25vw"
                   className="object-cover transition-transform group-hover:scale-105"
                 />
               ) : (
                 // VIDEO THUMBNAIL
                 <div className="absolute inset-0 flex items-center justify-center bg-secondary">
-                  <Play className="size-10 text-muted-foreground" />
+                  <Play className="size-8 sm:size-10 text-muted-foreground" />
                 </div>
               )}
               {/* OVERLAY */}
               <div className="absolute inset-0 bg-black/0 group-hover:bg-black/20 transition-colors" />
               {/* VIDEO ICON */}
               {item.type === "video" && (
-                <div className="absolute bottom-2 right-2">
-                  <div className="p-1.5 rounded-full bg-black/60">
-                    <Play className="size-3 text-white" />
+                <div className="absolute bottom-1.5 sm:bottom-2 right-1.5 sm:right-2">
+                  <div className="p-1 sm:p-1.5 rounded-full bg-black/60">
+                    <Play className="size-2.5 sm:size-3 text-white" />
                   </div>
                 </div>
               )}
@@ -213,13 +218,19 @@ export const ProjectGallery = ({ media, className }: ProjectGalleryProps) => {
 export const ProjectGalleryEmpty = ({ className }: { className?: string }) => {
   // RETURN PROJECT GALLERY EMPTY STATE
   return (
-    <Card className={cn("p-6", className)}>
-      <div className="flex flex-col items-center justify-center py-8 text-center">
-        <div className="p-4 rounded-full bg-secondary mb-4">
-          <ImageIcon className="size-8 text-muted-foreground" />
+    <Card className={cn("p-4 sm:p-6", className)}>
+      <h3 className="text-base sm:text-lg font-semibold mb-3 sm:mb-4 flex items-center gap-2">
+        <div className="size-7 sm:size-8 rounded-lg bg-primary/10 flex items-center justify-center shrink-0">
+          <Images className="size-3.5 sm:size-4 text-primary" />
         </div>
-        <h3 className="font-semibold mb-1">No screenshots yet</h3>
-        <p className="text-sm text-muted-foreground">
+        Screenshots
+      </h3>
+      <div className="flex flex-col items-center justify-center py-6 sm:py-8 text-center">
+        <div className="size-12 sm:size-14 rounded-full bg-secondary/50 flex items-center justify-center mb-3">
+          <ImageIcon className="size-5 sm:size-6 text-muted-foreground" />
+        </div>
+        <h4 className="font-medium text-sm sm:text-base mb-1">No screenshots yet</h4>
+        <p className="text-xs sm:text-sm text-muted-foreground">
           This project hasn&apos;t added any screenshots.
         </p>
       </div>
