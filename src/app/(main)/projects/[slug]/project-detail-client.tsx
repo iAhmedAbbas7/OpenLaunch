@@ -9,7 +9,6 @@ import {
   Code,
   Github,
   FileText,
-  MessageSquare,
   Info,
   ChevronUp,
   Bookmark,
@@ -46,6 +45,7 @@ import Link from "next/link";
 import { motion } from "framer-motion";
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
+import { CommentsSection } from "@/components/comments";
 import type { ProjectWithDetails } from "@/types/database";
 
 // <== ICON MAP FOR CATEGORIES ==>
@@ -92,7 +92,6 @@ export const ProjectDetailClient = ({ project }: ProjectDetailClientProps) => {
         <ArrowLeft className="size-4" />
         Back to Explore
       </Link>
-
       {/* MAIN CONTENT */}
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 sm:gap-8">
         {/* MAIN COLUMN */}
@@ -128,7 +127,6 @@ export const ProjectDetailClient = ({ project }: ProjectDetailClientProps) => {
               </Card>
             </motion.div>
           )}
-
           {/* GALLERY */}
           <motion.div
             initial={{ opacity: 0, y: 20 }}
@@ -175,27 +173,17 @@ export const ProjectDetailClient = ({ project }: ProjectDetailClientProps) => {
               </Card>
             </motion.div>
           )}
-          {/* COMMENTS SECTION PLACEHOLDER */}
+          {/* COMMENTS SECTION */}
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.5, delay: 0.3 }}
           >
             <Card className="p-4 sm:p-6">
-              <h2 className="text-base sm:text-lg font-semibold mb-3 sm:mb-4 flex items-center gap-2">
-                <div className="size-7 sm:size-8 rounded-lg bg-primary/10 flex items-center justify-center shrink-0">
-                  <MessageSquare className="size-3.5 sm:size-4 text-primary" />
-                </div>
-                Discussion ({project.commentsCount})
-              </h2>
-              <div className="text-center py-6 sm:py-8">
-                <div className="size-12 sm:size-14 rounded-full bg-secondary/50 flex items-center justify-center mx-auto mb-3">
-                  <MessageSquare className="size-5 sm:size-6 text-muted-foreground" />
-                </div>
-                <p className="text-sm sm:text-base text-muted-foreground">
-                  Comments coming soon!
-                </p>
-              </div>
+              <CommentsSection
+                projectId={project.id}
+                commentsCount={project.commentsCount}
+              />
             </Card>
           </motion.div>
         </div>
