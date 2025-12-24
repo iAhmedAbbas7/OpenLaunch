@@ -22,6 +22,8 @@ export {
   getProfiles,
   getCurrentUserProfile,
   isUsernameAvailable,
+  getDashboardStats,
+  type DashboardStats,
 } from "./profiles";
 
 // <== PROJECT ACTIONS ==>
@@ -38,6 +40,9 @@ export {
   bookmarkProject,
   hasUpvotedProject,
   hasBookmarkedProject,
+  getMyProjectStatsByStatus,
+  deleteDraftProjects,
+  type ProjectStatsByStatus,
 } from "./projects";
 
 // <== SOCIAL ACTIONS ==>
@@ -65,6 +70,26 @@ export {
   linkProjectToGitHub,
   unlinkProjectFromGitHub,
 } from "./github";
+
+// <== ARTICLE ACTIONS ==>
+export {
+  createArticle,
+  updateArticle,
+  deleteArticle,
+  getArticleBySlug,
+  getArticles,
+  getArticlesByAuthor,
+  getMyArticles,
+  getTrendingArticles,
+  likeArticle,
+  getArticleLikeStatus,
+  bookmarkArticle,
+  getArticleBookmarkStatus,
+  incrementArticleViews,
+  getAllArticleTags,
+  type ArticleWithAuthor,
+  type ArticlePreview,
+} from "./articles";
 
 // <== CATEGORY ACTIONS ==>
 export { getCategories } from "./categories";
