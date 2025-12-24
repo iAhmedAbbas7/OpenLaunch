@@ -8,6 +8,7 @@ import {
   updateProfile,
   getCurrentUserProfile,
   isUsernameAvailable,
+  getDashboardStats,
 } from "@/server/actions/profiles";
 import { toast } from "sonner";
 import { profileKeys, queryOptions } from "@/lib/query";
@@ -150,5 +151,30 @@ export function useUsernameAvailable(username: string) {
     staleTime: 10 * 1000,
     // ENABLED
     enabled: !!username && username.length >= 3,
+  });
+}
+
+// <== USE DASHBOARD STATS HOOK ==>
+export function useDashboardStats() {
+  // RETURNING QUERY
+  return useQuery({
+    // QUERY KEY
+    queryKey: [...profileKeys.me(), "dashboard-stats"],
+    // QUERY FUNCTION
+    queryFn: async () => {
+      // FETCH DASHBOARD STATS
+      const result = await getDashboardStats();
+      // THROW ERROR IF FAILED
+      if (!result.success) {
+        // THROW ERROR
+        throw new Error(result.error?.message || "Failed to fetch stats");
+      }
+      // RETURN DATA
+      return result.data;
+    },
+    // QUERY OPTIONS
+    staleTime: 30 * 1000,
+    // REFETCH ON WINDOW FOCUS
+    refetchOnWindowFocus: false,
   });
 }
