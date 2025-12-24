@@ -25,6 +25,22 @@ import type { Profile } from "@/lib/db/schema";
 import { createClient } from "@/lib/supabase/server";
 import { eq, and, or, ilike, desc, asc, sql, count } from "drizzle-orm";
 
+// <== DASHBOARD STATS TYPE ==>
+export interface DashboardStats {
+  // <== TOTAL PROJECTS ==>
+  totalProjects: number;
+  // <== PUBLISHED ARTICLES ==>
+  publishedArticles: number;
+  // <== TOTAL VIEWS ==>
+  totalViews: number;
+  // <== FOLLOWERS COUNT ==>
+  followersCount: number;
+  // <== FOLLOWING COUNT ==>
+  followingCount: number;
+  // <== REPUTATION SCORE ==>
+  reputationScore: number;
+}
+
 // <== GET PROFILE BY ID ==>
 export async function getProfileById(
   profileId: string
@@ -515,6 +531,105 @@ export async function isUsernameAvailable(
       error: {
         code: "INTERNAL_ERROR",
         message: "Failed to check username availability",
+      },
+    };
+  }
+}
+
+// <== GET DASHBOARD STATS ==>
+export async function getDashboardStats(): Promise<
+  ApiResponse<DashboardStats>
+> {
+  // TRY TO GET DASHBOARD STATS
+  try {
+    // CREATE SUPABASE CLIENT
+    const supabase = await createClient();
+    // GET CURRENT USER
+    const {
+      data: { user },
+    } = await supabase.auth.getUser();
+    // CHECK IF USER IS AUTHENTICATED
+    if (!user) {
+      // RETURN ERROR RESPONSE
+      return {
+        success: false,
+        error: {
+          code: "UNAUTHORIZED",
+          message: "You must be logged in to view dashboard stats",
+        },
+      };
+    }
+    // GET USER PROFILE
+    const profile = await db.query.profiles.findFirst({
+      where: eq(profiles.userId, user.id),
+    });
+    // CHECK IF PROFILE EXISTS
+    if (!profile) {
+      // RETURN ERROR RESPONSE
+      return {
+        success: false,
+        error: {
+          code: "NOT_FOUND",
+          message: "Profile not found",
+        },
+      };
+    }
+    // IMPORT PROJECTS AND ARTICLES TABLES
+    const { projects, articles } = await import("@/lib/db/schema");
+    // GET TOTAL LAUNCHED PROJECTS COUNT AND VIEWS (ONLY LAUNCHED/FEATURED, NOT DRAFTS)
+    const projectsResult = await db
+      .select({
+        count: count(),
+        totalViews: sql<number>`COALESCE(SUM(${projects.viewsCount}), 0)`,
+      })
+      .from(projects)
+      .where(
+        and(
+          eq(projects.ownerId, profile.id),
+          or(eq(projects.status, "launched"), eq(projects.status, "featured"))
+        )
+      );
+    // GET PUBLISHED ARTICLES COUNT AND VIEWS
+    const articlesResult = await db
+      .select({
+        count: count(),
+        totalViews: sql<number>`COALESCE(SUM(${articles.viewsCount}), 0)`,
+      })
+      .from(articles)
+      .where(
+        and(eq(articles.authorId, profile.id), eq(articles.isPublished, true))
+      );
+    // CALCULATE TOTALS
+    const totalProjects = projectsResult[0]?.count ?? 0;
+    // GET PUBLISHED ARTICLES COUNT
+    const publishedArticles = articlesResult[0]?.count ?? 0;
+    // GET PROJECT VIEWS
+    const projectViews = Number(projectsResult[0]?.totalViews ?? 0);
+    // GET ARTICLE VIEWS
+    const articleViews = Number(articlesResult[0]?.totalViews ?? 0);
+    // GET TOTAL VIEWS
+    const totalViews = projectViews + articleViews;
+    // RETURN SUCCESS RESPONSE
+    return {
+      success: true,
+      data: {
+        totalProjects,
+        publishedArticles,
+        totalViews,
+        followersCount: profile.followersCount,
+        followingCount: profile.followingCount,
+        reputationScore: profile.reputationScore,
+      },
+    };
+  } catch (error) {
+    // LOG ERROR
+    console.error("Error fetching dashboard stats:", error);
+    // RETURN ERROR RESPONSE
+    return {
+      success: false,
+      error: {
+        code: "INTERNAL_ERROR",
+        message: "Failed to fetch dashboard stats",
       },
     };
   }
