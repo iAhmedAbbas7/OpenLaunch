@@ -6,4 +6,5 @@ export * from "./use-profile";
 export * from "./use-articles";
 export * from "./use-projects";
 export * from "./use-debounce";
+export * from "./use-comments";
 export * from "./use-categories";
