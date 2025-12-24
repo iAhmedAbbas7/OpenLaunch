@@ -8,9 +8,10 @@ import {
   TooltipTrigger,
 } from "@/components/ui/tooltip";
 import { cn } from "@/lib/utils";
+import { Bookmark } from "lucide-react";
 import { useAuth } from "@/hooks/use-auth";
+import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
-import { Bookmark, Loader2 } from "lucide-react";
 import { useBookmark, useBookmarkStatus } from "@/hooks/use-projects";
 
 // <== BOOKMARK BUTTON PROPS ==>
@@ -38,40 +39,58 @@ export const BookmarkButton = ({
   const { data: bookmarkData } = useBookmarkStatus(projectId);
   // GET BOOKMARK MUTATION
   const { mutate: bookmark, isPending: isBookmarking } = useBookmark();
-  // HAS BOOKMARKED
-  const hasBookmarked = bookmarkData?.hasBookmarked ?? false;
+  // SERVER HAS BOOKMARKED STATE
+  const serverHasBookmarked = bookmarkData?.hasBookmarked ?? false;
+  // LOCAL STATE FOR OPTIMISTIC UPDATES
+  const [optimisticHasBookmarked, setOptimisticHasBookmarked] =
+    useState(serverHasBookmarked);
+  // SYNC WITH SERVER STATE
+  useEffect(() => {
+    // SET OPTIMISTIC HAS BOOKMARKED
+    setOptimisticHasBookmarked(serverHasBookmarked);
+  }, [serverHasBookmarked]);
   // <== HANDLE BOOKMARK ==>
   const handleBookmark = () => {
-    // CHECK IF AUTHENTICATED
-    if (!isAuthenticated) return;
-    // BOOKMARK PROJECT
-    bookmark(projectId);
+    // CHECK IF AUTHENTICATED OR ALREADY PENDING
+    if (!isAuthenticated || isBookmarking) return;
+    // OPTIMISTIC UPDATE - INSTANT UI CHANGE
+    const wasBookmarked = optimisticHasBookmarked;
+    // SET OPTIMISTIC HAS BOOKMARKED
+    setOptimisticHasBookmarked(!wasBookmarked);
+    // BOOKMARK PROJECT (SERVER CALL)
+    bookmark(projectId, {
+      // ON ERROR
+      onError: () => {
+        // ROLLBACK ON ERROR
+        setOptimisticHasBookmarked(wasBookmarked);
+      },
+    });
   };
   // BUTTON CONTENT
   const buttonContent = (
     <Button
-      variant={hasBookmarked ? "default" : "outline"}
+      variant={optimisticHasBookmarked ? "default" : "outline"}
       size={variant === "icon" ? "icon" : size}
       onClick={handleBookmark}
-      disabled={isBookmarking || !isAuthenticated}
+      disabled={!isAuthenticated}
       className={cn(
         "transition-all duration-200",
-        hasBookmarked &&
+        optimisticHasBookmarked &&
           "bg-primary/10 text-primary hover:bg-primary/20 border-primary/30",
         !isAuthenticated && "cursor-not-allowed opacity-60",
+        isBookmarking && "pointer-events-none",
         className
       )}
     >
-      {isBookmarking ? (
-        <Loader2 className="size-4 animate-spin" />
-      ) : (
-        <Bookmark
-          className={cn("size-4", hasBookmarked && "fill-primary text-primary")}
-        />
-      )}
+      <Bookmark
+        className={cn(
+          "size-4 transition-transform duration-150",
+          optimisticHasBookmarked && "fill-primary text-primary scale-110"
+        )}
+      />
       {variant !== "icon" && (
         <span className="ml-2">
-          {hasBookmarked ? "Bookmarked" : "Bookmark"}
+          {optimisticHasBookmarked ? "Bookmarked" : "Bookmark"}
         </span>
       )}
     </Button>
