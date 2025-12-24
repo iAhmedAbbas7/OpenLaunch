@@ -15,7 +15,7 @@ import { motion } from "framer-motion";
 import { useEffect, useRef } from "react";
 import { Card } from "@/components/ui/card";
 import { ArrowLeft, User } from "lucide-react";
-import { Button } from "@/components/ui/button";
+import { CommentsSection } from "@/components/comments";
 import { useIncrementArticleViews } from "@/hooks/use-articles";
 import type { ArticleWithAuthor } from "@/server/actions/articles";
 
@@ -86,22 +86,12 @@ export const ArticleDetailClient = ({ article }: ArticleDetailClientProps) => {
                 </div>
               )}
             </div>
-            {/* COMMENTS SECTION PLACEHOLDER */}
+            {/* COMMENTS SECTION */}
             <div id="comments" className="mt-8 sm:mt-12 pt-6 sm:pt-8 border-t">
-              <h2 className="text-lg sm:text-xl font-semibold mb-4 sm:mb-6">
-                Comments ({article.commentsCount})
-              </h2>
-              <Card className="p-6 sm:p-8 text-center">
-                <div className="size-12 sm:size-16 rounded-full bg-secondary flex items-center justify-center mx-auto mb-3 sm:mb-4">
-                  <User className="size-6 sm:size-8 text-muted-foreground" />
-                </div>
-                <p className="text-sm sm:text-base text-muted-foreground mb-4">
-                  Comments feature coming soon in Phase 6!
-                </p>
-                <Button variant="outline" size="sm" disabled>
-                  Add Comment
-                </Button>
-              </Card>
+              <CommentsSection
+                articleId={article.id}
+                commentsCount={article.commentsCount}
+              />
             </div>
           </motion.main>
           {/* SIDEBAR */}
