@@ -3,6 +3,13 @@
 
 // <== IMPORTS ==>
 import {
+  Heart,
+  Bookmark,
+  Share2,
+  MessageSquare,
+  MoreHorizontal,
+} from "lucide-react";
+import {
   useLikeArticle,
   useBookmarkArticle,
   useArticleLikeStatus,
@@ -16,15 +23,9 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { toast } from "sonner";
 import { cn } from "@/lib/utils";
+import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { motion, AnimatePresence } from "framer-motion";
-import {
-  Heart,
-  Bookmark,
-  Share2,
-  MessageSquare,
-  MoreHorizontal,
-} from "lucide-react";
 
 // <== LIKE BUTTON PROPS ==>
 interface LikeButtonProps {
@@ -48,47 +49,80 @@ export const LikeButton = ({
   showCount = true,
   className,
 }: LikeButtonProps) => {
-  // LIKE STATUS
+  // LIKE STATUS FROM SERVER
   const { data: likeStatus } = useArticleLikeStatus(articleId);
   // LIKE MUTATION
   const likeMutation = useLikeArticle();
-  // IS LIKED
-  const isLiked = likeStatus?.liked ?? false;
+  // SERVER IS LIKED STATE
+  const serverIsLiked = likeStatus?.liked ?? false;
+  // LOCAL STATE FOR OPTIMISTIC UPDATES
+  const [optimisticIsLiked, setOptimisticIsLiked] = useState(serverIsLiked);
+  // LOCAL STATE FOR OPTIMISTIC UPDATES
+  const [optimisticCount, setOptimisticCount] = useState(likesCount);
+  // SYNC WITH SERVER STATE
+  useEffect(() => {
+    // SET OPTIMISTIC IS LIKED
+    setOptimisticIsLiked(serverIsLiked);
+  }, [serverIsLiked]);
+  // SYNC INITIAL COUNT
+  useEffect(() => {
+    // SET OPTIMISTIC COUNT
+    setOptimisticCount(likesCount);
+  }, [likesCount]);
   // HANDLE LIKE
   const handleLike = () => {
-    // LIKE ARTICLE
-    likeMutation.mutate(articleId);
+    // CHECK IF ALREADY PENDING
+    if (likeMutation.isPending) return;
+    // OPTIMISTIC UPDATE - INSTANT UI CHANGE
+    const wasLiked = optimisticIsLiked;
+    // SET OPTIMISTIC IS LIKED
+    setOptimisticIsLiked(!wasLiked);
+    // SET OPTIMISTIC COUNT
+    setOptimisticCount((prev) => (wasLiked ? prev - 1 : prev + 1));
+    // LIKE ARTICLE (SERVER CALL)
+    likeMutation.mutate(articleId, {
+      // ON ERROR
+      onError: () => {
+        // ROLLBACK ON ERROR - RESTORE OPTIMISTIC IS LIKED
+        setOptimisticIsLiked(wasLiked);
+        // ROLLBACK ON ERROR - RESTORE OPTIMISTIC COUNT
+        setOptimisticCount((prev) => (wasLiked ? prev + 1 : prev - 1));
+      },
+    });
   };
   // RETURN LIKE BUTTON COMPONENT
   return (
     <Button
-      variant={isLiked ? "default" : "outline"}
+      variant={optimisticIsLiked ? "default" : "outline"}
       size={size}
       onClick={handleLike}
-      disabled={likeMutation.isPending}
       className={cn(
         "gap-1.5 sm:gap-2 transition-all duration-200",
-        isLiked && "bg-red-500 hover:bg-red-600 border-red-500",
+        optimisticIsLiked && "bg-red-500 hover:bg-red-600 border-red-500",
+        likeMutation.isPending && "pointer-events-none",
         className
       )}
     >
       {/* LIKE ICON ANIMATION */}
       <AnimatePresence mode="wait">
         <motion.div
-          key={isLiked ? "liked" : "unliked"}
+          key={optimisticIsLiked ? "liked" : "unliked"}
           initial={{ scale: 0.8 }}
           animate={{ scale: 1 }}
           exit={{ scale: 0.8 }}
           transition={{ duration: 0.15 }}
         >
           <Heart
-            className={cn("size-3.5 sm:size-4", isLiked && "fill-current")}
+            className={cn(
+              "size-3.5 sm:size-4",
+              optimisticIsLiked && "fill-current"
+            )}
           />
         </motion.div>
       </AnimatePresence>
       {showCount && (
-        <span className="text-xs sm:text-sm font-medium">
-          {likeMutation.data?.likesCount ?? likesCount}
+        <span className="text-xs sm:text-sm font-medium tabular-nums">
+          {optimisticCount}
         </span>
       )}
     </Button>
@@ -117,47 +151,82 @@ export const BookmarkButton = ({
   showCount = true,
   className,
 }: BookmarkButtonProps) => {
-  // BOOKMARK STATUS
+  // BOOKMARK STATUS FROM SERVER
   const { data: bookmarkStatus } = useArticleBookmarkStatus(articleId);
   // BOOKMARK MUTATION
   const bookmarkMutation = useBookmarkArticle();
-  // IS BOOKMARKED
-  const isBookmarked = bookmarkStatus?.bookmarked ?? false;
+  // SERVER IS BOOKMARKED STATE
+  const serverIsBookmarked = bookmarkStatus?.bookmarked ?? false;
+  // LOCAL STATE FOR OPTIMISTIC UPDATES
+  const [optimisticIsBookmarked, setOptimisticIsBookmarked] =
+    useState(serverIsBookmarked);
+  // LOCAL STATE FOR OPTIMISTIC UPDATES
+  const [optimisticCount, setOptimisticCount] = useState(bookmarksCount);
+  // SYNC WITH SERVER STATE
+  useEffect(() => {
+    // SET OPTIMISTIC IS BOOKMARKED
+    setOptimisticIsBookmarked(serverIsBookmarked);
+  }, [serverIsBookmarked]);
+  // SYNC INITIAL COUNT
+  useEffect(() => {
+    // SET OPTIMISTIC COUNT
+    setOptimisticCount(bookmarksCount);
+  }, [bookmarksCount]);
   // HANDLE BOOKMARK
   const handleBookmark = () => {
-    // BOOKMARK ARTICLE
-    bookmarkMutation.mutate(articleId);
+    // CHECK IF ALREADY PENDING
+    if (bookmarkMutation.isPending) return;
+    // OPTIMISTIC UPDATE - INSTANT UI CHANGE
+    const wasBookmarked = optimisticIsBookmarked;
+    // SET OPTIMISTIC IS BOOKMARKED
+    setOptimisticIsBookmarked(!wasBookmarked);
+    // SET OPTIMISTIC COUNT
+    setOptimisticCount((prev) => (wasBookmarked ? prev - 1 : prev + 1));
+    // BOOKMARK ARTICLE (SERVER CALL)
+    bookmarkMutation.mutate(articleId, {
+      // ON ERROR
+      onError: () => {
+        // ROLLBACK ON ERROR - RESTORE OPTIMISTIC IS BOOKMARKED
+        setOptimisticIsBookmarked(wasBookmarked);
+        // ROLLBACK ON ERROR - RESTORE OPTIMISTIC COUNT
+        setOptimisticCount((prev) => (wasBookmarked ? prev + 1 : prev - 1));
+      },
+    });
   };
   // RETURN BOOKMARK BUTTON COMPONENT
   return (
     <Button
-      variant={isBookmarked ? "default" : "outline"}
+      variant={optimisticIsBookmarked ? "default" : "outline"}
       size={size}
       onClick={handleBookmark}
-      disabled={bookmarkMutation.isPending}
       className={cn(
         "gap-1.5 sm:gap-2 transition-all duration-200",
-        isBookmarked && "bg-amber-500 hover:bg-amber-600 border-amber-500",
+        optimisticIsBookmarked &&
+          "bg-amber-500 hover:bg-amber-600 border-amber-500",
+        bookmarkMutation.isPending && "pointer-events-none",
         className
       )}
     >
       {/* BOOKMARK ICON ANIMATION */}
       <AnimatePresence mode="wait">
         <motion.div
-          key={isBookmarked ? "bookmarked" : "unbookmarked"}
+          key={optimisticIsBookmarked ? "bookmarked" : "unbookmarked"}
           initial={{ scale: 0.8 }}
           animate={{ scale: 1 }}
           exit={{ scale: 0.8 }}
           transition={{ duration: 0.15 }}
         >
           <Bookmark
-            className={cn("size-3.5 sm:size-4", isBookmarked && "fill-current")}
+            className={cn(
+              "size-3.5 sm:size-4",
+              optimisticIsBookmarked && "fill-current"
+            )}
           />
         </motion.div>
       </AnimatePresence>
       {showCount && (
-        <span className="text-xs sm:text-sm font-medium">
-          {bookmarkMutation.data?.bookmarksCount ?? bookmarksCount}
+        <span className="text-xs sm:text-sm font-medium tabular-nums">
+          {optimisticCount}
         </span>
       )}
     </Button>
