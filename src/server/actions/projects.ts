@@ -48,6 +48,35 @@ import { slugify } from "@/lib/utils";
 import { createClient } from "@/lib/supabase/server";
 import type { Project, NewProject } from "@/lib/db/schema";
 
+// <== PROJECT STATS BY STATUS TYPE ==>
+export interface ProjectStatsByStatus {
+  // <== DRAFT ==>
+  draft: number;
+  // <== PENDING ==>
+  pending: number;
+  // <== LAUNCHED ==>
+  launched: number;
+  // <== FEATURED ==>
+  featured: number;
+  // <== TOTAL ==>
+  total: number;
+  // <== PROJECTS ==>
+  projects: Array<{
+    // <== ID ==>
+    id: string;
+    // <== NAME ==>
+    name: string;
+    // <== SLUG ==>
+    slug: string;
+    // <== STATUS ==>
+    status: string;
+    // <== GITHUB URL ==>
+    githubUrl: string | null;
+    // <== CREATED AT ==>
+    createdAt: Date;
+  }>;
+}
+
 // <== GENERATE UNIQUE SLUG ==>
 async function generateUniqueSlug(name: string): Promise<string> {
   // GENERATE BASE SLUG
@@ -149,6 +178,24 @@ export async function createProject(
           message: "Profile not found",
         },
       };
+    }
+    // CHECK IF PROJECT WITH SAME GITHUB URL ALREADY EXISTS (FOR IMPORT FLOW)
+    if (validatedFields.data.githubUrl) {
+      // CHECK IF PROJECT WITH SAME GITHUB URL ALREADY EXISTS
+      const existingProject = await db.query.projects.findFirst({
+        where: and(
+          eq(projects.ownerId, profile.id),
+          eq(projects.githubUrl, validatedFields.data.githubUrl)
+        ),
+      });
+      // IF PROJECT EXISTS, RETURN IT INSTEAD OF CREATING A NEW ONE
+      if (existingProject) {
+        // RETURN EXISTING PROJECT
+        return {
+          success: true,
+          data: existingProject,
+        };
+      }
     }
     // GENERATE UNIQUE SLUG
     const slug = await generateUniqueSlug(validatedFields.data.name);
@@ -1033,5 +1080,157 @@ export async function hasBookmarkedProject(
     console.error("Error checking bookmark status:", error);
     // RETURN FALSE ON ERROR
     return { success: true, data: { hasBookmarked: false } };
+  }
+}
+
+// <== GET MY PROJECT STATS BY STATUS ==>
+export async function getMyProjectStatsByStatus(): Promise<
+  ApiResponse<ProjectStatsByStatus>
+> {
+  // TRY TO GET PROJECT STATS
+  try {
+    // CREATE SUPABASE CLIENT
+    const supabase = await createClient();
+    // GET CURRENT USER
+    const {
+      data: { user },
+    } = await supabase.auth.getUser();
+    // CHECK IF USER IS AUTHENTICATED
+    if (!user) {
+      // RETURN ERROR RESPONSE
+      return {
+        success: false,
+        error: {
+          code: "UNAUTHORIZED",
+          message: "You must be logged in",
+        },
+      };
+    }
+    // GET USER PROFILE
+    const profile = await db.query.profiles.findFirst({
+      where: eq(profiles.userId, user.id),
+    });
+    // CHECK IF PROFILE EXISTS
+    if (!profile) {
+      // RETURN ERROR RESPONSE
+      return {
+        success: false,
+        error: {
+          code: "NOT_FOUND",
+          message: "Profile not found",
+        },
+      };
+    }
+    // GET ALL USER PROJECTS
+    const userProjects = await db.query.projects.findMany({
+      where: eq(projects.ownerId, profile.id),
+      orderBy: [desc(projects.createdAt)],
+    });
+    // COUNT BY STATUS
+    const stats: ProjectStatsByStatus = {
+      draft: 0,
+      pending: 0,
+      launched: 0,
+      featured: 0,
+      total: userProjects.length,
+      projects: userProjects.map((p) => ({
+        id: p.id,
+        name: p.name,
+        slug: p.slug,
+        status: p.status,
+        githubUrl: p.githubUrl,
+        createdAt: p.createdAt,
+      })),
+    };
+    // COUNT EACH STATUS
+    for (const project of userProjects) {
+      // COUNT BY STATUS
+      if (project.status in stats) {
+        // INCREMENT COUNT
+        stats[
+          project.status as keyof Omit<
+            ProjectStatsByStatus,
+            "total" | "projects"
+          >
+        ]++;
+      }
+    }
+    // RETURN STATS
+    return { success: true, data: stats };
+  } catch (error) {
+    // LOG ERROR
+    console.error("Error getting project stats:", error);
+    // RETURN ERROR RESPONSE
+    return {
+      success: false,
+      error: {
+        code: "INTERNAL_ERROR",
+        message: "Failed to get project stats",
+      },
+    };
+  }
+}
+
+// <== DELETE DRAFT PROJECTS ==>
+export async function deleteDraftProjects(): Promise<
+  ApiResponse<{ deletedCount: number }>
+> {
+  // TRY TO DELETE DRAFT PROJECTS
+  try {
+    // CREATE SUPABASE CLIENT
+    const supabase = await createClient();
+    // GET CURRENT USER
+    const {
+      data: { user },
+    } = await supabase.auth.getUser();
+    // CHECK IF USER IS AUTHENTICATED
+    if (!user) {
+      // RETURN ERROR RESPONSE
+      return {
+        success: false,
+        error: {
+          code: "UNAUTHORIZED",
+          message: "You must be logged in",
+        },
+      };
+    }
+    // GET USER PROFILE
+    const profile = await db.query.profiles.findFirst({
+      where: eq(profiles.userId, user.id),
+    });
+    // CHECK IF PROFILE EXISTS
+    if (!profile) {
+      // RETURN ERROR RESPONSE
+      return {
+        success: false,
+        error: {
+          code: "NOT_FOUND",
+          message: "Profile not found",
+        },
+      };
+    }
+    // DELETE ALL DRAFT PROJECTS FOR THIS USER
+    const deletedProjects = await db
+      .delete(projects)
+      .where(
+        and(eq(projects.ownerId, profile.id), eq(projects.status, "draft"))
+      )
+      .returning({ id: projects.id });
+    // RETURN COUNT
+    return {
+      success: true,
+      data: { deletedCount: deletedProjects.length },
+    };
+  } catch (error) {
+    // LOG ERROR
+    console.error("Error deleting draft projects:", error);
+    // RETURN ERROR RESPONSE
+    return {
+      success: false,
+      error: {
+        code: "INTERNAL_ERROR",
+        message: "Failed to delete draft projects",
+      },
+    };
   }
 }
