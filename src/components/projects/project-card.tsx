@@ -14,6 +14,7 @@ import Image from "next/image";
 import { cn } from "@/lib/utils";
 import { motion } from "framer-motion";
 import { useAuth } from "@/hooks/use-auth";
+import { useState, useEffect } from "react";
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -48,18 +49,47 @@ export const ProjectCard = ({
   const { data: upvoteData } = useUpvoteStatus(project.id);
   // GET UPVOTE MUTATION
   const { mutate: upvote, isPending: isUpvoting } = useUpvote();
-  // HAS UPVOTED
-  const hasUpvoted = upvoteData?.hasUpvoted ?? false;
+  // SERVER HAS UPVOTED STATE
+  const serverHasUpvoted = upvoteData?.hasUpvoted ?? false;
+  // LOCAL STATE FOR OPTIMISTIC UPDATES
+  const [optimisticHasUpvoted, setOptimisticHasUpvoted] =
+    useState(serverHasUpvoted);
+  // LOCAL STATE FOR OPTIMISTIC UPDATES
+  const [optimisticCount, setOptimisticCount] = useState(project.upvotesCount);
+  // SYNC WITH SERVER STATE
+  useEffect(() => {
+    // SET OPTIMISTIC HAS UPVOTED
+    setOptimisticHasUpvoted(serverHasUpvoted);
+  }, [serverHasUpvoted]);
+  // SYNC INITIAL COUNT
+  useEffect(() => {
+    // SET OPTIMISTIC COUNT
+    setOptimisticCount(project.upvotesCount);
+  }, [project.upvotesCount]);
   // <== HANDLE UPVOTE ==>
   const handleUpvote = (e: React.MouseEvent) => {
     // PREVENT LINK NAVIGATION
     e.preventDefault();
     // STOP PROPAGATION
     e.stopPropagation();
-    // CHECK IF AUTHENTICATED
-    if (!isAuthenticated) return;
-    // UPVOTE PROJECT
-    upvote(project.id);
+    // CHECK IF AUTHENTICATED OR ALREADY PENDING
+    if (!isAuthenticated || isUpvoting) return;
+    // OPTIMISTIC UPDATE - INSTANT UI CHANGE
+    const wasUpvoted = optimisticHasUpvoted;
+    // SET OPTIMISTIC HAS UPVOTED
+    setOptimisticHasUpvoted(!wasUpvoted);
+    // SET OPTIMISTIC COUNT
+    setOptimisticCount((prev) => (wasUpvoted ? prev - 1 : prev + 1));
+    // UPVOTE PROJECT (SERVER CALL)
+    upvote(project.id, {
+      // ON ERROR
+      onError: () => {
+        // SET OPTIMISTIC HAS UPVOTED
+        setOptimisticHasUpvoted(wasUpvoted);
+        // SET OPTIMISTIC COUNT
+        setOptimisticCount((prev) => (wasUpvoted ? prev + 1 : prev - 1));
+      },
+    });
   };
   // FORMAT LAUNCH DATE
   const formattedLaunchDate = project.launchDate
@@ -128,18 +158,27 @@ export const ProjectCard = ({
           </div>
           {/* UPVOTE BUTTON */}
           <Button
-            variant={hasUpvoted ? "default" : "outline"}
+            variant={optimisticHasUpvoted ? "default" : "outline"}
             size="sm"
             onClick={handleUpvote}
-            disabled={isUpvoting || !isAuthenticated}
+            disabled={!isAuthenticated}
             className={cn(
-              "flex-col h-auto py-2 px-3 shrink-0",
-              hasUpvoted && "bg-primary/10 text-primary hover:bg-primary/20",
-              !isAuthenticated && "cursor-not-allowed opacity-60"
+              "flex-col h-auto py-2 px-3 shrink-0 transition-all duration-150",
+              optimisticHasUpvoted &&
+                "bg-primary/10 text-primary hover:bg-primary/20",
+              !isAuthenticated && "cursor-not-allowed opacity-60",
+              isUpvoting && "pointer-events-none"
             )}
           >
-            <ChevronUp className={cn("size-4", hasUpvoted && "text-primary")} />
-            <span className="text-xs font-medium">{project.upvotesCount}</span>
+            <ChevronUp
+              className={cn(
+                "size-4 transition-all duration-150",
+                optimisticHasUpvoted && "text-primary scale-110"
+              )}
+            />
+            <span className="text-xs font-medium tabular-nums">
+              {optimisticCount}
+            </span>
           </Button>
         </div>
         {/* TECH STACK */}
