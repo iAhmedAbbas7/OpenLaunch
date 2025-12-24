@@ -91,5 +91,20 @@ export {
   type ArticlePreview,
 } from "./articles";
 
+// <== COMMENT ACTIONS ==>
+export {
+  createComment,
+  updateComment,
+  deleteComment,
+  getComments,
+  getCommentsWithReplies,
+  getCommentById,
+  upvoteComment,
+  getCommentUpvoteStatus,
+  getReplies,
+  type CommentWithAuthor,
+  type CommentWithReplies,
+} from "./comments";
+
 // <== CATEGORY ACTIONS ==>
 export { getCategories } from "./categories";
