@@ -111,10 +111,16 @@ export const commentKeys = {
   // COMMENTS BY ARTICLE
   byArticle: (articleId: string, filters?: Record<string, unknown>) =>
     [...commentKeys.lists(), "article", articleId, filters] as const,
+  // REPLIES TO COMMENT
+  replies: (parentId: string, filters?: Record<string, unknown>) =>
+    [...commentKeys.lists(), "replies", parentId, filters] as const,
   // COMMENT DETAILS
   details: () => [...commentKeys.all, "detail"] as const,
   // COMMENT DETAIL BY ID
   detail: (commentId: string) => [...commentKeys.details(), commentId] as const,
+  // COMMENT UPVOTE STATUS
+  upvoteStatus: (commentId: string) =>
+    [...commentKeys.all, "upvote-status", commentId] as const,
 };
 
 // <== NOTIFICATION QUERY KEYS ==>
