@@ -17,6 +17,7 @@ import { motion } from "framer-motion";
 import { getInitials } from "@/lib/utils";
 import { useAuth } from "@/hooks/use-auth";
 import { Card } from "@/components/ui/card";
+import { useDashboardStats } from "@/hooks/use-profile";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { DashboardSkeleton } from "@/components/dashboard/dashboard-skeleton";
 
@@ -124,26 +125,28 @@ const QuickActionCard = ({
 export const DashboardClient = () => {
   // GET AUTH HOOK
   const { user, profile, isLoading, isInitialized } = useAuth();
-  // <== GET USERNAME ==>
+  // GET DASHBOARD STATS
+  const { data: stats, isLoading: statsLoading } = useDashboardStats();
+  // GET USERNAME
   const username: string =
     profile?.username ??
     user?.userMetadata?.username ??
     user?.userMetadata?.preferredUsername ??
     "";
-  // <== GET DISPLAY NAME (WITH PROPER FALLBACKS) ==>
+  // GET DISPLAY NAME (WITH PROPER FALLBACKS)
   const displayName: string =
     profile?.displayName ??
     user?.userMetadata?.fullName ??
     user?.userMetadata?.name ??
     username ??
     "User";
-  // <== GET AVATAR URL ==>
+  // GET AVATAR URL
   const avatarUrl: string | undefined =
     profile?.avatarUrl ?? user?.userMetadata?.avatarUrl ?? undefined;
-  // <== GET INITIALS (FALLBACK TO EMPTY IF NO NAME) ==>
+  // GET INITIALS (FALLBACK TO EMPTY IF NO NAME)
   const initials = getInitials(displayName);
-  // <== RENDER LOADING STATE ==>
-  if (!isInitialized || isLoading) {
+  // RENDER LOADING STATE
+  if (!isInitialized || isLoading || statsLoading) {
     // RETURNING SKELETON LOADING STATE
     return <DashboardSkeleton />;
   }
@@ -182,31 +185,29 @@ export const DashboardClient = () => {
         {/* PROJECTS STAT */}
         <StatCard
           title="Total Projects"
-          value={0}
+          value={stats?.totalProjects ?? 0}
           icon={<Rocket className="size-4 sm:size-5 text-primary" />}
           delay={0.1}
         />
         {/* ARTICLES STAT */}
         <StatCard
           title="Published Articles"
-          value={0}
+          value={stats?.publishedArticles ?? 0}
           icon={<BookOpen className="size-4 sm:size-5 text-primary" />}
           delay={0.2}
         />
         {/* FOLLOWERS STAT */}
         <StatCard
           title="Followers"
-          value={profile?.followersCount ?? 0}
+          value={stats?.followersCount ?? profile?.followersCount ?? 0}
           icon={<Users className="size-4 sm:size-5 text-primary" />}
-          trend="+0%"
           delay={0.3}
         />
         {/* VIEWS STAT */}
         <StatCard
           title="Total Views"
-          value={0}
+          value={stats?.totalViews ?? 0}
           icon={<Eye className="size-4 sm:size-5 text-primary" />}
-          trend="+0%"
           delay={0.4}
         />
       </div>
