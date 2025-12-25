@@ -133,6 +133,9 @@ export interface CommentWithReplies extends CommentWithAuthor {
   replies: CommentWithAuthor[];
 }
 
+// <== MESSAGE STATUS TYPE ==>
+export type MessageStatus = "sending" | "sent" | "delivered" | "read" | "failed";
+
 // <== PARTICIPANT WITH PROFILE ==>
 export interface ParticipantWithProfile {
   // <== ID ==>
@@ -143,6 +146,12 @@ export interface ParticipantWithProfile {
   role: "owner" | "admin" | "member";
   // <== LAST READ AT ==>
   lastReadAt: Date | null;
+  // <== IS MUTED ==>
+  isMuted: boolean;
+  // <== CLEARED AT - FOR CLEAR CHAT FEATURE ==>
+  clearedAt: Date | null;
+  // <== DELETED AT - FOR SOFT DELETE CONVERSATION FEATURE ==>
+  deletedAt: Date | null;
   // <== USER ==>
   user: ProfilePreview;
 }
