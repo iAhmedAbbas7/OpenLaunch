@@ -1,0 +1,1 @@
+ALTER TABLE "conversation_participants" ADD COLUMN "first_unread_message_id" uuid;
