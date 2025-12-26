@@ -106,5 +106,29 @@ export {
   type CommentWithReplies,
 } from "./comments";
 
+// <== MESSAGE ACTIONS ==>
+export {
+  createConversation,
+  createDirectConversation,
+  getConversationById,
+  getUserConversations,
+  createMessage,
+  getMessages,
+  updateMessage,
+  deleteMessage,
+  markConversationAsRead,
+  markMessagesAsDelivered,
+  toggleMuteConversation,
+  searchUsersForConversation,
+  getOrCreateDirectConversation,
+  getUnreadMessagesCount,
+  clearConversation,
+  deleteConversation,
+  clearFirstUnreadMarker,
+  updateFirstUnreadMessageId,
+  openConversation,
+  canEditMessage,
+} from "./messages";
+
 // <== CATEGORY ACTIONS ==>
 export { getCategories } from "./categories";
