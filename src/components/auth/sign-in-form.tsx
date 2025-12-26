@@ -9,12 +9,14 @@ import {
   AuthFormSection,
 } from "@/components/auth/auth-card";
 import Link from "next/link";
-import { useState } from "react";
+import { toast } from "sonner";
 import { useForm } from "react-hook-form";
 import { useAuth } from "@/hooks/use-auth";
+import { useState, useEffect } from "react";
 import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
+import { useSearchParams } from "next/navigation";
 import { Loader2, Eye, EyeOff } from "lucide-react";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { signInSchema, type SignInInput } from "@/lib/validations/auth";
@@ -22,12 +24,24 @@ import { OAuthButtons, OAuthDivider } from "@/components/auth/oauth-buttons";
 
 // <== SIGN IN FORM COMPONENT ==>
 export const SignInForm = () => {
+  // SEARCH PARAMS TO CHECK FOR REGISTERED FLAG
+  const searchParams = useSearchParams();
   // STATE FOR PASSWORD VISIBILITY
   const [showPassword, setShowPassword] = useState(false);
   // STATE FOR ERROR
   const [error, setError] = useState<string | null>(null);
   // GET AUTH HOOK
   const { signIn, isLoading } = useAuth();
+  // <== SHOW SUCCESS TOAST IF JUST REGISTERED ==>
+  useEffect(() => {
+    // CHECK IF USER JUST REGISTERED
+    if (searchParams.get("registered") === "true") {
+      // SHOW SUCCESS TOAST
+      toast.success("Account created successfully!", {
+        description: "Please sign in with your credentials.",
+      });
+    }
+  }, [searchParams]);
   // FORM HOOK
   const form = useForm<SignInInput>({
     resolver: zodResolver(signInSchema),
