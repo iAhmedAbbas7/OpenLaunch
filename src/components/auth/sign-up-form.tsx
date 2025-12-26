@@ -17,9 +17,9 @@ import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { Loader2, Eye, EyeOff, CheckCircle2 } from "lucide-react";
 import { signUpSchema, type SignUpInput } from "@/lib/validations/auth";
 import { OAuthButtons, OAuthDivider } from "@/components/auth/oauth-buttons";
+import { Loader2, Eye, EyeOff, CheckCircle2, PartyPopper } from "lucide-react";
 
 // <== SIGN UP FORM COMPONENT ==>
 export const SignUpForm = () => {
@@ -27,8 +27,10 @@ export const SignUpForm = () => {
   const [showPassword, setShowPassword] = useState(false);
   // STATE FOR ERROR
   const [error, setError] = useState<string | null>(null);
-  // STATE FOR SUCCESS
+  // STATE FOR SUCCESS (EMAIL CONFIRMATION REQUIRED)
   const [success, setSuccess] = useState(false);
+  // STATE FOR INSTANT SUCCESS (NO EMAIL CONFIRMATION)
+  const [instantSuccess, setInstantSuccess] = useState(false);
   // GET AUTH HOOK
   const { signUp, isLoading } = useAuth();
   // FORM HOOK
@@ -49,8 +51,9 @@ export const SignUpForm = () => {
   const onSubmit = async (data: SignUpInput) => {
     // RESET ERROR
     setError(null);
-    // RESET SUCCESS
+    // RESET SUCCESS STATES
     setSuccess(false);
+    setInstantSuccess(false);
     // SIGN UP
     const result = await signUp(data);
     // CHECK IF ERROR
@@ -58,11 +61,65 @@ export const SignUpForm = () => {
       // SET ERROR
       setError(result.error ?? "Failed to create account");
     } else {
-      // SET SUCCESS
-      setSuccess(true);
+      // CHECK IF EMAIL CONFIRMATION IS REQUIRED
+      if (result.data?.needsEmailConfirmation) {
+        // SHOW EMAIL VERIFICATION STATE
+        setSuccess(true);
+      } else {
+        // NO EMAIL CONFIRMATION REQUIRED - SHOW INSTANT SUCCESS
+        setInstantSuccess(true);
+      }
     }
   };
-  // <== RENDER SUCCESS STATE ==>
+  // <== RENDER INSTANT SUCCESS STATE (NO EMAIL CONFIRMATION) ==>
+  if (instantSuccess) {
+    // RETURNING INSTANT SUCCESS STATE
+    return (
+      // AUTH CARD
+      <AuthCard className="text-center">
+        {/* SUCCESS ICON */}
+        <motion.div
+          initial={{ scale: 0 }}
+          animate={{ scale: 1 }}
+          transition={{
+            type: "spring",
+            stiffness: 260,
+            damping: 20,
+            delay: 0.2,
+          }}
+          className="flex justify-center mb-6"
+        >
+          <div className="p-4 rounded-full bg-primary/10 ring-4 ring-primary/5">
+            <PartyPopper className="size-8 text-primary" />
+          </div>
+        </motion.div>
+        {/* SUCCESS TITLE */}
+        <AuthFormSection>
+          <h2 className="text-xl font-bold font-heading mb-2">
+            Account Created Successfully!
+          </h2>
+        </AuthFormSection>
+        {/* SUCCESS MESSAGE */}
+        <AuthFormSection>
+          <p className="text-muted-foreground text-sm mb-6 leading-relaxed">
+            Your account has been created. Please sign in with your credentials
+            to get started.
+          </p>
+        </AuthFormSection>
+        {/* BACK TO SIGN IN */}
+        <AuthFormSection>
+          <Button
+            asChild
+            variant="outline"
+            className="w-full h-11 transition-all duration-200 hover:bg-foreground/5"
+          >
+            <Link href="/sign-in">Back to Sign In</Link>
+          </Button>
+        </AuthFormSection>
+      </AuthCard>
+    );
+  }
+  // <== RENDER EMAIL VERIFICATION SUCCESS STATE ==>
   if (success) {
     // RETURNING SUCCESS STATE
     return (
