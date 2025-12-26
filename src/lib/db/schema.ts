@@ -43,6 +43,15 @@ export const messageTypeEnum = pgEnum("message_type", [
   "project_share",
 ]);
 
+// <== MESSAGE STATUS ==>
+export const messageStatusEnum = pgEnum("message_status", [
+  "sending",
+  "sent",
+  "delivered",
+  "read",
+  "failed",
+]);
+
 // <== PARTICIPANT ROLE ==>
 export const participantRoleEnum = pgEnum("participant_role", [
   "owner",
@@ -547,6 +556,9 @@ export const conversationParticipants = pgTable(
       .defaultNow()
       .notNull(),
     isMuted: boolean("is_muted").default(false).notNull(),
+    clearedAt: timestamp("cleared_at", { withTimezone: true }),
+    deletedAt: timestamp("deleted_at", { withTimezone: true }),
+    firstUnreadMessageId: uuid("first_unread_message_id"),
   },
   (table) => [
     index("conversation_participants_conversation_id_idx").on(
@@ -573,8 +585,15 @@ export const messages = pgTable(
       .references(() => profiles.id, { onDelete: "cascade" }),
     content: text("content"),
     type: messageTypeEnum("type").default("text").notNull(),
+    status: messageStatusEnum("status").default("sent").notNull(),
     metadata: jsonb("metadata"),
     isEdited: boolean("is_edited").default(false).notNull(),
+    deletedForUserIds: jsonb("deleted_for_user_ids")
+      .$type<string[]>()
+      .default([]),
+    isDeletedForEveryone: boolean("is_deleted_for_everyone")
+      .default(false)
+      .notNull(),
     createdAt: timestamp("created_at", { withTimezone: true })
       .defaultNow()
       .notNull(),
@@ -586,6 +605,7 @@ export const messages = pgTable(
     index("messages_conversation_id_idx").on(table.conversationId),
     index("messages_sender_id_idx").on(table.senderId),
     index("messages_created_at_idx").on(table.createdAt),
+    index("messages_status_idx").on(table.status),
   ]
 );
 
