@@ -23,7 +23,7 @@ import type { AuthResponse, OAuthProvider } from "@/types/auth";
 // <== SIGN UP WITH EMAIL AND PASSWORD ==>
 export async function signUp(
   input: SignUpInput
-): Promise<AuthResponse<{ userId: string }>> {
+): Promise<AuthResponse<{ userId: string; needsEmailConfirmation?: boolean }>> {
   // VALIDATE INPUT
   const validatedFields = signUpSchema.safeParse(input);
   // CHECK IF INPUT IS VALID
@@ -56,12 +56,14 @@ export async function signUp(
   const headersList = await headers();
   // GET ORIGIN FOR REDIRECT
   const origin = headersList.get("origin") ?? "http://localhost:3000";
+  // BUILD REDIRECT URL
+  const redirectUrl = `${origin}${authConfig.routes.callback}`;
   // SIGN UP USER
   const { data, error } = await supabase.auth.signUp({
     email,
     password,
     options: {
-      emailRedirectTo: `${origin}${authConfig.routes.callback}`,
+      emailRedirectTo: redirectUrl,
       data: {
         username,
         display_name: displayName ?? username,
@@ -101,10 +103,20 @@ export async function signUp(
     console.error("Failed to create profile:", profileError);
     // PROFILE WILL BE CREATED ON FIRST LOGIN IF IT FAILS HERE
   }
+  // CHECK IF SESSION EXISTS (EMAIL CONFIRMATION DISABLED = SESSION EXISTS)
+  const needsEmailConfirmation = !data.session;
+  // IF EMAIL CONFIRMATION IS DISABLED, SIGN OUT TO PREVENT AUTO-LOGIN
+  if (!needsEmailConfirmation) {
+    // SIGN OUT THE AUTO-CREATED SESSION
+    await supabase.auth.signOut();
+  }
   // RETURN SUCCESS RESPONSE
   return {
     success: true,
-    data: { userId: data.user.id },
+    data: {
+      userId: data.user.id,
+      needsEmailConfirmation,
+    },
   };
 }
 
