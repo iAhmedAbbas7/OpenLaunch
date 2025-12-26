@@ -7,6 +7,7 @@ import { AuthProvider } from "./auth-provider";
 import { Toaster } from "@/components/ui/sonner";
 import { QueryProvider } from "./query-provider";
 import { ThemeProvider } from "./theme-provider";
+import { GlobalMessagesProvider } from "./messages-provider";
 
 // <== PROVIDERS PROPS ==>
 interface ProvidersProps {
@@ -24,10 +25,13 @@ export const Providers = ({ children }: ProvidersProps) => {
       <ThemeProvider>
         {/* AUTH PROVIDER */}
         <AuthProvider>
-          {/* CHILDREN */}
-          {children}
-          {/* TOASTER FOR NOTIFICATIONS */}
-          <ToasterWithTheme />
+          {/* GLOBAL MESSAGES PROVIDER - HANDLES REAL-TIME SUBSCRIPTIONS */}
+          <GlobalMessagesProvider>
+            {/* CHILDREN */}
+            {children}
+            {/* TOASTER FOR NOTIFICATIONS */}
+            <ToasterWithTheme />
+          </GlobalMessagesProvider>
         </AuthProvider>
       </ThemeProvider>
     </QueryProvider>
