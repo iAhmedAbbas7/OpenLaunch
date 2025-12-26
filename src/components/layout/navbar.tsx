@@ -9,7 +9,8 @@ import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Logo } from "@/components/common/Logo";
 import { UserMenu } from "@/components/auth/user-menu";
-import { Menu, X, Loader2, LogOut } from "lucide-react";
+import { useUnreadMessagesCount } from "@/hooks/use-messages";
+import { Menu, X, Loader2, LogOut, MessageCircle } from "lucide-react";
 
 // <== NAV LINKS ==>
 const navLinks = [
@@ -68,6 +69,8 @@ export const Navbar = () => {
   const [isScrolled, setIsScrolled] = useState(false);
   // GET AUTH HOOK
   const { isAuthenticated, isLoading } = useAuth();
+  // GET UNREAD MESSAGES COUNT
+  const { data: unreadCount } = useUnreadMessagesCount();
   // <== HANDLE SCROLL ==>
   useEffect(() => {
     // HANDLE SCROLL FUNCTION
@@ -124,8 +127,22 @@ export const Navbar = () => {
               // LOADING STATE
               <div className="w-20 h-9 rounded-md bg-secondary animate-pulse" />
             ) : isAuthenticated ? (
-              // USER MENU
-              <UserMenu />
+              // MESSAGES AND USER MENU
+              <div className="flex items-center gap-3">
+                {/* MESSAGES ICON - PINK CIRCLE WITH PINK ICON */}
+                <Link
+                  href="/messages"
+                  className="relative flex items-center justify-center size-9 rounded-full border-2 border-primary/60 hover:border-primary hover:bg-primary/10 transition-all duration-200"
+                >
+                  <MessageCircle className="size-4 text-primary" />
+                  {/* UNREAD DOT - ONLY SHOWS WHEN UNREAD MESSAGES EXIST */}
+                  {(unreadCount ?? 0) > 0 ? (
+                    <span className="absolute -top-0.5 -right-0.5 size-3 bg-primary rounded-full border-2 border-background" />
+                  ) : null}
+                </Link>
+                {/* USER MENU */}
+                <UserMenu />
+              </div>
             ) : (
               // AUTH BUTTONS
               <>
@@ -184,7 +201,7 @@ export const Navbar = () => {
                 // LOADING STATE
                 <div className="w-full h-11 rounded-md bg-secondary animate-pulse" />
               ) : isAuthenticated ? (
-                // AUTHENTICATED - SHOW DASHBOARD AND SIGN OUT
+                // AUTHENTICATED - SHOW DASHBOARD, MESSAGES AND SIGN OUT
                 <>
                   <Button
                     variant="outline"
@@ -196,6 +213,23 @@ export const Navbar = () => {
                       onClick={() => setIsMobileMenuOpen(false)}
                     >
                       Dashboard
+                    </Link>
+                  </Button>
+                  <Button
+                    variant="outline"
+                    className="w-full h-11 cursor-pointer relative"
+                    asChild
+                  >
+                    <Link
+                      href="/messages"
+                      onClick={() => setIsMobileMenuOpen(false)}
+                    >
+                      <MessageCircle className="size-4 mr-2" />
+                      Messages
+                      {/* UNREAD DOT INDICATOR */}
+                      {(unreadCount ?? 0) > 0 ? (
+                        <span className="ml-2 size-2.5 bg-primary rounded-full" />
+                      ) : null}
                     </Link>
                   </Button>
                   <MobileSignOutButton
