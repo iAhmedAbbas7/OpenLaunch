@@ -11,6 +11,7 @@ import {
   BookOpen,
   Trophy,
   Loader2,
+  MessageCircle,
 } from "lucide-react";
 import {
   DropdownMenu,
@@ -26,12 +27,15 @@ import { useState } from "react";
 import { getInitials } from "@/lib/utils";
 import { useAuth } from "@/hooks/use-auth";
 import { Button } from "@/components/ui/button";
+import { useUnreadMessagesCount } from "@/hooks/use-messages";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 
 // <== USER MENU COMPONENT ==>
 export const UserMenu = () => {
   // GET AUTH HOOK
   const { user, profile, isAuthenticated, signOut } = useAuth();
+  // GET UNREAD MESSAGES COUNT
+  const { data: unreadCount } = useUnreadMessagesCount();
   // STATE FOR SIGN OUT LOADING
   const [isSigningOut, setIsSigningOut] = useState(false);
   // <== HANDLE SIGN OUT ==>
@@ -138,6 +142,20 @@ export const UserMenu = () => {
             >
               <LayoutDashboard className="mr-2 size-4" />
               <span>Dashboard</span>
+            </Link>
+          </DropdownMenuItem>
+          {/* MESSAGES */}
+          <DropdownMenuItem asChild>
+            <Link
+              href="/messages"
+              className="cursor-pointer transition-colors duration-150"
+            >
+              <MessageCircle className="mr-2 size-4" />
+              <span>Messages</span>
+              {/* UNREAD DOT INDICATOR */}
+              {(unreadCount ?? 0) > 0 ? (
+                <span className="ml-auto size-2.5 bg-primary rounded-full" />
+              ) : null}
             </Link>
           </DropdownMenuItem>
           {/* PROFILE */}
