@@ -152,6 +152,8 @@ export interface ParticipantWithProfile {
   clearedAt: Date | null;
   // <== DELETED AT - FOR SOFT DELETE CONVERSATION FEATURE ==>
   deletedAt: Date | null;
+  // <== FIRST UNREAD MESSAGE ID - FOR UNREAD DIVIDER FEATURE ==>
+  firstUnreadMessageId: string | null;
   // <== USER ==>
   user: ProfilePreview;
 }
@@ -160,8 +162,12 @@ export interface ParticipantWithProfile {
 export interface ConversationWithParticipants extends Conversation {
   // <== PARTICIPANTS ==>
   participants: ParticipantWithProfile[];
-  // <== UNREAD COUNT ==>
+  // <== UNREAD COUNT (FOR BADGE) ==>
   unreadCount: number;
+  // <== FIRST UNREAD MESSAGE ID (FOR DIVIDER - SERVER PERSISTED) ==>
+  firstUnreadMessageId: string | null;
+  // <== UNREAD COUNT FOR DIVIDER (CALCULATED FROM FIRST UNREAD MESSAGE) ==>
+  unreadCountForDivider: number;
 }
 
 // <== MESSAGE WITH SENDER PROFILE ==>
