@@ -8,6 +8,27 @@
       "when": 1766131188441,
       "tag": "0000_sturdy_black_panther",
       "breakpoints": true
+    },
+    {
+      "idx": 1,
+      "version": "7",
+      "when": 1766645633994,
+      "tag": "0001_complex_blindfold",
+      "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "7",
+      "when": 1766646526880,
+      "tag": "0002_steady_tempest",
+      "breakpoints": true
+    },
+    {
+      "idx": 3,
+      "version": "7",
+      "when": 1766691096326,
+      "tag": "0003_public_the_spike",
+      "breakpoints": true
     }
   ]
 }
