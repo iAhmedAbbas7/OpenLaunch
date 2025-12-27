@@ -130,5 +130,26 @@ export {
   canEditMessage,
 } from "./messages";
 
+// <== ACHIEVEMENT ACTIONS ==>
+export {
+  getAllAchievements,
+  getUserAchievements,
+  getUserAchievementSummary,
+  checkAndUnlockAchievements,
+  getRecentlyUnlockedAchievements,
+  type AchievementWithProgress,
+  type UserAchievementSummary,
+} from "./achievements";
+
+// <== LEADERBOARD ACTIONS ==>
+export {
+  getLeaderboard,
+  getUserRank,
+  getTopUsersPreview,
+  type LeaderboardEntry,
+  type LeaderboardPeriod,
+  type LeaderboardType,
+} from "./leaderboard";
+
 // <== CATEGORY ACTIONS ==>
 export { getCategories } from "./categories";
