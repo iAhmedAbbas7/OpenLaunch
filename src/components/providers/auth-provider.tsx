@@ -2,11 +2,11 @@
 "use client";
 
 // <== IMPORTS ==>
-import { useCallback, useEffect } from "react";
 import type { UserProfile } from "@/types/auth";
 import { useAuthStore } from "@/stores/auth-store";
 import { createBrowserClient } from "@supabase/ssr";
 import { transformSupabaseUser } from "@/types/auth";
+import { useCallback, useEffect, useRef } from "react";
 import type { AuthChangeEvent, Session } from "@supabase/supabase-js";
 
 // <== SUPABASE CLIENT SINGLETON ==>
@@ -34,15 +34,11 @@ interface AuthProviderProps {
 
 // <== AUTH PROVIDER COMPONENT ==>
 export const AuthProvider = ({ children }: AuthProviderProps) => {
+  // REF TO TRACK IF INITIALIZED
+  const initializedRef = useRef(false);
   // GET AUTH STORE
-  const {
-    isInitialized,
-    setUser,
-    setProfile,
-    setLoading,
-    setInitialized,
-    reset,
-  } = useAuthStore();
+  const { setUser, setProfile, setLoading, setInitialized, reset } =
+    useAuthStore();
   // <== FETCH PROFILE ==>
   const fetchProfile = useCallback(
     async (userId: string) => {
@@ -66,29 +62,38 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
   );
   // <== INITIALIZE AUTH ==>
   useEffect(() => {
-    // CHECK IF ALREADY INITIALIZED
-    if (isInitialized) return;
+    // CHECK IF ALREADY INITIALIZED (USE REF TO PREVENT STRICT MODE DOUBLE INIT)
+    if (initializedRef.current) return;
+    // MARK AS INITIALIZED
+    initializedRef.current = true;
     // GET SUPABASE CLIENT
     const supabase = getSupabaseClient();
     // GET INITIAL SESSION
     const initializeAuth = async () => {
       // SET LOADING
       setLoading(true);
-      // GET SESSION
-      const {
-        data: { session },
-      } = await supabase.auth.getSession();
-      // CHECK IF SESSION EXISTS
-      if (session?.user) {
-        // SET USER
-        setUser(transformSupabaseUser(session.user));
-        // FETCH PROFILE
-        await fetchProfile(session.user.id);
+      try {
+        // USE getUser() INSTEAD OF getSession() FOR PROPER TOKEN VALIDATION
+        const {
+          data: { user },
+          error,
+        } = await supabase.auth.getUser();
+        // CHECK IF USER EXISTS AND NO ERROR
+        if (user && !error) {
+          // SET USER
+          setUser(transformSupabaseUser(user));
+          // FETCH PROFILE
+          await fetchProfile(user.id);
+        }
+      } catch (error) {
+        // LOG ERROR
+        console.error("Failed to initialize auth:", error);
+      } finally {
+        // SET INITIALIZED
+        setInitialized(true);
+        // SET LOADING
+        setLoading(false);
       }
-      // SET INITIALIZED
-      setInitialized(true);
-      // SET LOADING
-      setLoading(false);
     };
     // INITIALIZE AUTH
     initializeAuth();
@@ -97,20 +102,33 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
       data: { subscription },
     } = supabase.auth.onAuthStateChange(
       async (event: AuthChangeEvent, session: Session | null) => {
-        // CHECK IF SESSION EXISTS
-        if (session?.user) {
-          // SET USER
-          setUser(transformSupabaseUser(session.user));
-          // FETCH PROFILE ON SIGN IN
-          if (event === "SIGNED_IN") {
-            // FETCH PROFILE
-            await fetchProfile(session.user.id);
-          }
-        } else {
+        // HANDLE SIGN OUT EVENT
+        if (event === "SIGNED_OUT") {
           // RESET STATE
           reset();
           // SET INITIALIZED
           setInitialized(true);
+          // SET LOADING
+          setLoading(false);
+          // RETURN
+          return;
+        }
+        // CHECK IF SESSION EXISTS
+        if (session?.user) {
+          // SET USER
+          setUser(transformSupabaseUser(session.user));
+          // FETCH PROFILE ON SIGN IN OR TOKEN REFRESH
+          if (event === "SIGNED_IN" || event === "TOKEN_REFRESHED") {
+            // FETCH PROFILE
+            await fetchProfile(session.user.id);
+          }
+        } else if (event === "INITIAL_SESSION" && !session) {
+          // NO INITIAL SESSION - USER IS NOT LOGGED IN
+          reset();
+          // SET INITIALIZED
+          setInitialized(true);
+          // SET LOADING
+          setLoading(false);
         }
       }
     );
@@ -118,7 +136,7 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
     return () => {
       subscription.unsubscribe();
     };
-  }, [isInitialized, setUser, setLoading, setInitialized, reset, fetchProfile]);
+  }, [setUser, setProfile, setLoading, setInitialized, reset, fetchProfile]);
 
   // RETURNING CHILDREN
   return <>{children}</>;
