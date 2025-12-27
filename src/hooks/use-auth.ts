@@ -19,28 +19,8 @@ import {
 import { authConfig } from "@/config/auth";
 import { useRouter } from "next/navigation";
 import { useAuthStore } from "@/stores/auth-store";
-import { createBrowserClient } from "@supabase/ssr";
-import { transformSupabaseUser } from "@/types/auth";
-import { useCallback, useEffect, useTransition } from "react";
+import { useCallback, useTransition } from "react";
 import type { AuthResponse, OAuthProvider, UserProfile } from "@/types/auth";
-import type { AuthChangeEvent, Session } from "@supabase/supabase-js";
-
-// <== SUPABASE CLIENT SINGLETON ==>
-let supabaseClient: ReturnType<typeof createBrowserClient> | null = null;
-
-// <== GET SUPABASE CLIENT ==>
-function getSupabaseClient() {
-  // CHECK IF CLIENT EXISTS
-  if (!supabaseClient) {
-    // CREATE CLIENT
-    supabaseClient = createBrowserClient(
-      process.env.NEXT_PUBLIC_SUPABASE_URL!,
-      process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
-    );
-  }
-  // RETURN CLIENT
-  return supabaseClient;
-}
 
 // <== USE AUTH HOOK ==>
 export function useAuth() {
@@ -54,10 +34,8 @@ export function useAuth() {
     profile,
     isLoading,
     isInitialized,
-    setUser,
     setProfile,
     setLoading,
-    setInitialized,
     reset,
   } = useAuthStore();
   // <== FETCH PROFILE ==>
@@ -81,74 +59,6 @@ export function useAuth() {
     },
     [setProfile]
   );
-  // <== INITIALIZE AUTH ==>
-  useEffect(() => {
-    // CHECK IF ALREADY INITIALIZED
-    if (isInitialized) return;
-    // GET SUPABASE CLIENT
-    const supabase = getSupabaseClient();
-    // GET INITIAL SESSION
-    const initializeAuth = async () => {
-      // SET LOADING
-      setLoading(true);
-      // GET SESSION
-      const {
-        data: { session },
-      } = await supabase.auth.getSession();
-      // CHECK IF SESSION EXISTS
-      if (session?.user) {
-        // SET USER
-        setUser(transformSupabaseUser(session.user));
-        // FETCH PROFILE
-        await fetchProfile(session.user.id);
-      }
-      // SET INITIALIZED
-      setInitialized(true);
-      // SET LOADING
-      setLoading(false);
-    };
-    // INITIALIZE AUTH
-    initializeAuth();
-    // SUBSCRIBE TO AUTH CHANGES
-    const {
-      data: { subscription },
-    } = supabase.auth.onAuthStateChange(
-      async (event: AuthChangeEvent, session: Session | null) => {
-        // HANDLE SIGN OUT EVENT
-        if (event === "SIGNED_OUT") {
-          // RESET STATE COMPLETELY
-          reset();
-          // SET INITIALIZED
-          setInitialized(true);
-          // SET LOADING
-          setLoading(false);
-          // RETURN
-          return;
-        }
-        // CHECK IF SESSION EXISTS
-        if (session?.user) {
-          // SET USER
-          setUser(transformSupabaseUser(session.user));
-          // FETCH PROFILE ON SIGN IN OR TOKEN REFRESH
-          if (event === "SIGNED_IN" || event === "TOKEN_REFRESHED") {
-            // FETCH PROFILE
-            await fetchProfile(session.user.id);
-          }
-        } else {
-          // RESET STATE (NO SESSION)
-          reset();
-          // SET INITIALIZED
-          setInitialized(true);
-          // SET LOADING
-          setLoading(false);
-        }
-      }
-    );
-    // CLEANUP SUBSCRIPTION
-    return () => {
-      subscription.unsubscribe();
-    };
-  }, [isInitialized, setUser, setLoading, setInitialized, reset, fetchProfile]);
   // <== SIGN IN ==>
   const signIn = useCallback(
     async (input: SignInInput) => {
@@ -158,33 +68,17 @@ export function useAuth() {
       const result = await signInAction(input);
       // CHECK IF SUCCESSFUL
       if (result.success) {
-        // GET SUPABASE CLIENT
-        const supabase = getSupabaseClient();
-        // REFRESH THE BROWSER CLIENT'S SESSION FROM SERVER COOKIES
-        const {
-          data: { session },
-        } = await supabase.auth.getSession();
-        // IF SESSION EXISTS, UPDATE LOCAL STATE
-        if (session?.user) {
-          // SET USER IN STORE
-          setUser(transformSupabaseUser(session.user));
-          // FETCH PROFILE
-          await fetchProfile(session.user.id);
-        }
-        // START TRANSITION
-        startTransition(() => {
-          // NAVIGATE TO DEFAULT REDIRECT
-          router.push(authConfig.routes.defaultRedirect);
-          // REFRESH PAGE
-          router.refresh();
-        });
+        // REDIRECT TO DEFAULT REDIRECT
+        window.location.href = authConfig.routes.defaultRedirect;
+        // DON'T SET LOADING FALSE - PAGE WILL RELOAD
+        return result;
       }
-      // SET LOADING FALSE
+      // SET LOADING FALSE ON ERROR
       setLoading(false);
       // RETURN RESULT
       return result;
     },
-    [router, setUser, setLoading, fetchProfile]
+    [setLoading]
   );
   // <== SIGN UP ==>
   const signUp = useCallback(async (input: SignUpInput) => {
@@ -207,10 +101,6 @@ export function useAuth() {
   }, []);
   // <== SIGN OUT ==>
   const signOut = useCallback(async () => {
-    // GET SUPABASE CLIENT
-    const supabase = getSupabaseClient();
-    // SIGN OUT ON BROWSER CLIENT FIRST
-    await supabase.auth.signOut();
     // CALL SERVER ACTION TO CLEAR SERVER-SIDE SESSION/COOKIES
     await signOutAction();
     // RESET STORE STATE
