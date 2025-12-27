@@ -176,5 +176,7 @@ export function useDashboardStats() {
     staleTime: 30 * 1000,
     // REFETCH ON WINDOW FOCUS
     refetchOnWindowFocus: false,
+    // RETRY ONLY ONCE ON FAILURE
+    retry: 1,
   });
 }
