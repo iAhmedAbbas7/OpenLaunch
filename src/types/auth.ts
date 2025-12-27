@@ -87,6 +87,8 @@ export interface UserProfile {
   currentStreak: number;
   // <== LONGEST STREAK ==>
   longestStreak: number;
+  // <== LAST STREAK DATE ==>
+  lastStreakDate: string | null;
   // <== CREATED AT ==>
   createdAt: string;
 }
