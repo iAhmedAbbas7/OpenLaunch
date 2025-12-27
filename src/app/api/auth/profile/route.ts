@@ -48,6 +48,7 @@ export async function GET(request: Request) {
         followingCount: profile.followingCount,
         currentStreak: profile.currentStreak,
         longestStreak: profile.longestStreak,
+        lastStreakDate: profile.lastStreakDate?.toISOString() ?? null,
         createdAt: profile.createdAt.toISOString(),
       },
     });
