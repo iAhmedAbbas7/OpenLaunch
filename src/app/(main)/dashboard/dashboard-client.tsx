@@ -126,7 +126,7 @@ export const DashboardClient = () => {
   // GET AUTH HOOK
   const { user, profile, isLoading, isInitialized } = useAuth();
   // GET DASHBOARD STATS
-  const { data: stats, isLoading: statsLoading } = useDashboardStats();
+  const { data: stats } = useDashboardStats();
   // GET USERNAME
   const username: string =
     profile?.username ??
@@ -145,8 +145,8 @@ export const DashboardClient = () => {
     profile?.avatarUrl ?? user?.userMetadata?.avatarUrl ?? undefined;
   // GET INITIALS (FALLBACK TO EMPTY IF NO NAME)
   const initials = getInitials(displayName);
-  // RENDER LOADING STATE
-  if (!isInitialized || isLoading || statsLoading) {
+  // RENDER LOADING STATE (ONLY WAIT FOR AUTH, NOT STATS)
+  if (!isInitialized || isLoading) {
     // RETURNING SKELETON LOADING STATE
     return <DashboardSkeleton />;
   }
