@@ -16,6 +16,7 @@ import {
   deleteProject,
   getTrendingProjects,
   getFeaturedProjects,
+  getLaunchesByPeriod,
   upvoteProject,
   bookmarkProject,
   hasUpvotedProject,
@@ -26,6 +27,7 @@ import type {
   UpdateProjectInput,
   ProjectFiltersInput,
   ProjectSortBy,
+  LaunchPeriod,
 } from "@/lib/validations/projects";
 import { toast } from "sonner";
 import { projectKeys, queryOptions } from "@/lib/query";
@@ -159,6 +161,32 @@ export function useFeaturedProjects(limit: number = 10) {
     },
     // QUERY OPTIONS
     ...queryOptions.trending,
+  });
+}
+
+// <== USE LAUNCHES BY PERIOD HOOK ==>
+export function useLaunchesByPeriod(
+  period: LaunchPeriod = "today",
+  limit: number = 20
+) {
+  // RETURNING QUERY
+  return useQuery({
+    // QUERY KEY
+    queryKey: projectKeys.launches(period, limit),
+    // QUERY FUNCTION
+    queryFn: async () => {
+      // FETCH LAUNCHES BY PERIOD
+      const result = await getLaunchesByPeriod(period, limit);
+      // THROW ERROR IF FAILED
+      if (!result.success) {
+        // THROW ERROR
+        throw new Error(result.error.message);
+      }
+      // RETURN DATA
+      return result.data;
+    },
+    // CACHE FOR 30 SECONDS (LAUNCHES CHANGE FREQUENTLY)
+    staleTime: 30 * 1000,
   });
 }
 
