@@ -1,0 +1,1 @@
+ALTER TABLE "profiles" ADD COLUMN "notification_preferences" jsonb DEFAULT '{"newFollower":true,"projectUpvoted":true,"commentReceived":true,"commentReply":true,"articleLiked":true,"achievementUnlocked":true,"projectFeatured":true,"messageReceived":true}'::jsonb NOT NULL;
