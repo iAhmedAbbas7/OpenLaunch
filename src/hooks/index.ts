@@ -11,3 +11,4 @@ export * from "./use-messages";
 export * from "./use-categories";
 export * from "./use-leaderboard";
 export * from "./use-achievements";
+export * from "./use-notifications";
