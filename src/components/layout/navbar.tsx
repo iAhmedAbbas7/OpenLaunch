@@ -9,8 +9,9 @@ import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Logo } from "@/components/common/Logo";
 import { UserMenu } from "@/components/auth/user-menu";
+import { NotificationBell } from "@/components/notifications";
 import { useUnreadMessagesCount } from "@/hooks/use-messages";
-import { Menu, X, Loader2, LogOut, MessageCircle } from "lucide-react";
+import { Menu, X, Loader2, LogOut, MessageCircle, Bell } from "lucide-react";
 
 // <== NAV LINKS ==>
 const navLinks = [
@@ -127,8 +128,10 @@ export const Navbar = () => {
               // LOADING STATE
               <div className="w-20 h-9 rounded-md bg-secondary animate-pulse" />
             ) : isAuthenticated ? (
-              // MESSAGES AND USER MENU
-              <div className="flex items-center gap-3">
+              // NOTIFICATIONS, MESSAGES AND USER MENU
+              <div className="flex items-center gap-2">
+                {/* NOTIFICATIONS BELL */}
+                <NotificationBell />
                 {/* MESSAGES ICON - PINK CIRCLE WITH PINK ICON */}
                 <Link
                   href="/messages"
@@ -213,6 +216,19 @@ export const Navbar = () => {
                       onClick={() => setIsMobileMenuOpen(false)}
                     >
                       Dashboard
+                    </Link>
+                  </Button>
+                  <Button
+                    variant="outline"
+                    className="w-full h-11 cursor-pointer"
+                    asChild
+                  >
+                    <Link
+                      href="/notifications"
+                      onClick={() => setIsMobileMenuOpen(false)}
+                    >
+                      <Bell className="size-4 mr-2" />
+                      Notifications
                     </Link>
                   </Button>
                   <Button
