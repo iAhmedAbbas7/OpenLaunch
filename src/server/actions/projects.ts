@@ -42,6 +42,7 @@ import {
   type UpdateProjectInput,
   type ProjectSortBy,
   type ProjectFiltersInput,
+  type LaunchPeriod,
 } from "@/lib/validations/projects";
 import { db } from "@/lib/db";
 import { slugify } from "@/lib/utils";
@@ -649,6 +650,49 @@ export async function getProjects(
         )
       );
     }
+    // ADD LAUNCH PERIOD FILTER
+    if (params.launchPeriod && params.launchPeriod !== "all") {
+      // GET PERIOD START DATE
+      const now = new Date();
+      // PERIOD START DATE
+      let periodStart: Date;
+      // SWITCH BETWEEN PERIODS
+      switch (params.launchPeriod) {
+        // TODAY
+        case "today":
+          // START OF TODAY (MIDNIGHT)
+          periodStart = new Date(
+            now.getFullYear(),
+            now.getMonth(),
+            now.getDate()
+          );
+          break;
+        // WEEK
+        case "week":
+          // START OF THIS WEEK (SUNDAY)
+          const dayOfWeek = now.getDay();
+          periodStart = new Date(
+            now.getFullYear(),
+            now.getMonth(),
+            now.getDate() - dayOfWeek
+          );
+          break;
+        // MONTH
+        case "month":
+          // START OF THIS MONTH
+          periodStart = new Date(now.getFullYear(), now.getMonth(), 1);
+          break;
+        default:
+          // DEFAULT TO NULL
+          periodStart = new Date(0);
+      }
+      // ADD DATE FILTER - USE LAUNCH DATE IF SET, OTHERWISE CREATED AT
+      whereConditions.push(
+        sql`COALESCE(${projects.launchDate}, ${
+          projects.createdAt
+        }) >= ${periodStart.toISOString()}`
+      );
+    }
     // BUILD ORDER BY
     let orderByClause;
     // SWITCH BETWEEN SORT BY OPTIONS
@@ -795,6 +839,29 @@ export async function getFeaturedProjects(
 ): Promise<ApiResponse<ProjectPreview[]>> {
   // USE GET PROJECTS WITH FEATURED STATUS
   const result = await getProjects({ status: "featured", limit, page: 1 });
+  // CHECK IF SUCCESS
+  if (!result.success) {
+    return result;
+  }
+  // RETURN ITEMS ONLY
+  return {
+    success: true,
+    data: result.data.items,
+  };
+}
+
+// <== GET LAUNCHES BY PERIOD ==>
+export async function getLaunchesByPeriod(
+  period: LaunchPeriod = "today",
+  limit: number = 20
+): Promise<ApiResponse<ProjectPreview[]>> {
+  // USE GET PROJECTS WITH PERIOD FILTER AND TRENDING SORT
+  const result = await getProjects({
+    launchPeriod: period,
+    sortBy: "trending",
+    limit,
+    page: 1,
+  });
   // CHECK IF SUCCESS
   if (!result.success) {
     return result;
