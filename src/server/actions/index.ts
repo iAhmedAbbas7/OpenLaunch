@@ -36,6 +36,7 @@ export {
   getProjectsByOwner,
   getTrendingProjects,
   getFeaturedProjects,
+  getLaunchesByPeriod,
   upvoteProject,
   bookmarkProject,
   hasUpvotedProject,
@@ -150,6 +151,23 @@ export {
   type LeaderboardPeriod,
   type LeaderboardType,
 } from "./leaderboard";
+
+// <== NOTIFICATION ACTIONS ==>
+export {
+  getNotifications,
+  getUnreadNotificationsCount,
+  markNotificationAsRead,
+  markAllNotificationsAsRead,
+  deleteNotification,
+  deleteAllNotifications,
+  createNotification,
+  getNotificationPreferences,
+  updateNotificationPreferences,
+  type NotificationType,
+  type NotificationData,
+  type NotificationWithDetails,
+  type NotificationPreferences,
+} from "./notifications";
 
 // <== CATEGORY ACTIONS ==>
 export { getCategories } from "./categories";
