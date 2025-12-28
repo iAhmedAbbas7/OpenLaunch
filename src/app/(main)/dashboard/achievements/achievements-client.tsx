@@ -110,18 +110,22 @@ const SummaryCard = ({
 // <== ACHIEVEMENTS CLIENT COMPONENT ==>
 export const AchievementsClient = () => {
   // GET AUTH
-  const { profile } = useAuth();
+  const { profile, isLoading: authLoading } = useAuth();
   // FILTER STATE
   const [activeFilter, setActiveFilter] = useState<FilterType>("all");
-  // GET USER ACHIEVEMENTS
+  // GET USER ACHIEVEMENTS (ONLY FETCH WHEN PROFILE IS LOADED)
   const {
     data: achievements,
     isLoading: achievementsLoading,
     error: achievementsError,
+    refetch: refetchAchievements,
   } = useUserAchievements(profile?.id ?? "");
-  // GET ACHIEVEMENT SUMMARY
-  const { data: summary, isLoading: summaryLoading } =
-    useUserAchievementSummary(profile?.id ?? "");
+  // GET ACHIEVEMENT SUMMARY (ONLY FETCH WHEN PROFILE IS LOADED)
+  const {
+    data: summary,
+    isLoading: summaryLoading,
+    refetch: refetchSummary,
+  } = useUserAchievementSummary(profile?.id ?? "");
   // CHECK ACHIEVEMENTS MUTATION
   const checkAchievements = useCheckAchievements();
   // FILTER ACHIEVEMENTS
@@ -156,10 +160,17 @@ export const AchievementsClient = () => {
     if (activeFilter !== "all") return null;
     return groupAchievementsByRarity(achievements ?? []);
   }, [achievements, activeFilter]);
-  // LOADING STATE
-  const isLoading = achievementsLoading || summaryLoading;
+  // LOADING STATE (INCLUDE AUTH LOADING)
+  const isLoading = authLoading || achievementsLoading || summaryLoading;
   // ERROR STATE
   const error = achievementsError;
+  // HANDLE REFETCH AFTER CHECK ACHIEVEMENTS
+  const handleCheckAchievements = async () => {
+    // CHECK ACHIEVEMENTS
+    await checkAchievements.mutateAsync();
+    // REFETCH ACHIEVEMENTS DATA
+    await Promise.all([refetchAchievements(), refetchSummary()]);
+  };
   // RETURN ACHIEVEMENTS PAGE
   return (
     <div className="container max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-20 sm:pt-24 pb-8 sm:pb-12">
@@ -196,8 +207,8 @@ export const AchievementsClient = () => {
         <Button
           variant="outline"
           size="sm"
-          onClick={() => checkAchievements.mutate()}
-          disabled={checkAchievements.isPending}
+          onClick={handleCheckAchievements}
+          disabled={checkAchievements.isPending || isLoading}
           className="h-9 sm:h-10 text-xs sm:text-sm w-full sm:w-auto"
         >
           <RefreshCw
