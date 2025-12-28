@@ -14,7 +14,7 @@ import {
 import { db } from "@/lib/db";
 import type { ApiResponse } from "@/types/database";
 import { createClient } from "@/lib/supabase/server";
-import { eq, and, count, sql, desc } from "drizzle-orm";
+import { eq, and, or, count, sql, desc } from "drizzle-orm";
 
 // <== ACHIEVEMENT WITH PROGRESS TYPE ==>
 export interface AchievementWithProgress {
@@ -253,6 +253,71 @@ export async function getUserAchievements(
     );
     // GET USER STATS FOR PROGRESS
     const userStats = await getUserStats(userId);
+    // GET USER PROFILE FOR CREATED AT (NEEDED FOR JOINED_BEFORE CRITERIA)
+    const userProfile = await db.query.profiles.findFirst({
+      where: eq(profiles.id, userId),
+      columns: { createdAt: true },
+    });
+    const userCreatedAt = userProfile?.createdAt ?? new Date();
+    // AUTO-UNLOCK ELIGIBLE ACHIEVEMENTS
+    const achievementsToUnlock: string[] = [];
+    // LOOP THROUGH ALL ACHIEVEMENTS
+    for (const achievement of allAchievements) {
+      // SKIP IF ACHIEVEMENT IS ALREADY UNLOCKED
+      if (unlockedMap.has(achievement.id)) continue;
+      // GET CRITERIA
+      const criteria = achievement.criteria as {
+        type: string;
+        value: number | string;
+      };
+      // CHECK IF CRITERIA MET (HANDLES ALL CRITERIA TYPES INCLUDING DATE-BASED)
+      const criteriaMet = checkAchievementCriteria(
+        criteria,
+        userStats,
+        userCreatedAt
+      );
+      // CHECK IF CRITERIA IS MET
+      if (criteriaMet) {
+        // ADD ACHIEVEMENT ID TO LIST OF ACHIEVEMENTS TO UNLOCK
+        achievementsToUnlock.push(achievement.id);
+      }
+    }
+    // UNLOCK ELIGIBLE ACHIEVEMENTS
+    if (achievementsToUnlock.length > 0) {
+      // NOW
+      const now = new Date();
+      // INSERT USER ACHIEVEMENTS (ON CONFLICT DO NOTHING)
+      await db
+        .insert(userAchievements)
+        .values(
+          // MAP ACHIEVEMENTS TO UNLOCK
+          achievementsToUnlock.map((achievementId) => ({
+            userId,
+            achievementId,
+            unlockedAt: now,
+          }))
+        )
+        .onConflictDoNothing();
+      // UPDATE UNLOCKED MAP
+      for (const achievementId of achievementsToUnlock) {
+        // SET ACHIEVEMENT ID TO NOW
+        unlockedMap.set(achievementId, now.toISOString());
+      }
+      // UPDATE USER REPUTATION FOR NEWLY UNLOCKED ACHIEVEMENTS
+      const pointsEarned = allAchievements
+        .filter((a) => achievementsToUnlock.includes(a.id))
+        .reduce((sum, a) => sum + a.points, 0);
+      // CHECK IF POINTS EARNED IS GREATER THAN 0
+      if (pointsEarned > 0) {
+        // UPDATE USER REPUTATION
+        await db
+          .update(profiles)
+          .set({
+            reputationScore: sql`${profiles.reputationScore} + ${pointsEarned}`,
+          })
+          .where(eq(profiles.id, userId));
+      }
+    }
     // MAP ACHIEVEMENTS WITH PROGRESS
     const achievementsWithProgress: AchievementWithProgress[] =
       allAchievements.map((achievement) => {
@@ -315,16 +380,17 @@ export async function getUserAchievementSummary(
 ): Promise<ApiResponse<UserAchievementSummary>> {
   // TRY TO FETCH SUMMARY
   try {
-    // FETCH ALL ACHIEVEMENTS
-    const allAchievements = await db.query.achievements.findMany();
-    // GET USER'S UNLOCKED ACHIEVEMENTS
-    const userUnlockedAchievements = await db.query.userAchievements.findMany({
-      where: eq(userAchievements.userId, userId),
-    });
-    // CREATE SET OF UNLOCKED ACHIEVEMENT IDS
-    const unlockedIds = new Set(
-      userUnlockedAchievements.map((ua) => ua.achievementId)
-    );
+    // GET USER ACHIEVEMENTS (THIS WILL AUTO-UNLOCK ELIGIBLE ONES)
+    const achievementsResult = await getUserAchievements(userId);
+    // CHECK FOR ERROR
+    if (!achievementsResult.success) {
+      return {
+        success: false,
+        error: achievementsResult.error,
+      };
+    }
+    // GET ACHIEVEMENTS WITH PROGRESS
+    const achievementsWithProgress = achievementsResult.data;
     // INITIALIZE COUNTERS
     const byRarity = {
       common: { total: 0, unlocked: 0 },
@@ -336,24 +402,28 @@ export async function getUserAchievementSummary(
     let totalPoints = 0;
     // EARNED POINTS COUNT
     let earnedPoints = 0;
+    // UNLOCKED COUNT
+    let unlockedCount = 0;
     // LOOP THROUGH ACHIEVEMENTS
-    for (const achievement of allAchievements) {
+    for (const achievement of achievementsWithProgress) {
       // INCREMENT TOTAL
-      byRarity[achievement.rarity].total++;
+      byRarity[achievement.rarity as keyof typeof byRarity].total++;
       // INCREMENT TOTAL POINTS
       totalPoints += achievement.points;
       // CHECK IF UNLOCKED
-      if (unlockedIds.has(achievement.id)) {
+      if (achievement.isUnlocked) {
         // INCREMENT UNLOCKED
-        byRarity[achievement.rarity].unlocked++;
+        byRarity[achievement.rarity as keyof typeof byRarity].unlocked++;
         // INCREMENT EARNED POINTS
         earnedPoints += achievement.points;
+        // INCREMENT UNLOCKED COUNT
+        unlockedCount++;
       }
     }
     // BUILD SUMMARY
     const summary: UserAchievementSummary = {
-      totalAchievements: allAchievements.length,
-      unlockedCount: userUnlockedAchievements.length,
+      totalAchievements: achievementsWithProgress.length,
+      unlockedCount,
       totalPoints,
       earnedPoints,
       byRarity,
@@ -542,16 +612,23 @@ async function getUserStats(userId: string): Promise<UserStats> {
     featuredProjectsResult,
     openSourceProjectsResult,
   ] = await Promise.all([
-    // PROJECTS LAUNCHED
+    // PROJECTS LAUNCHED (ONLY LAUNCHED OR FEATURED STATUS)
     db
       .select({ count: count() })
       .from(projects)
-      .where(eq(projects.ownerId, userId)),
-    // ARTICLES PUBLISHED
+      .where(
+        and(
+          eq(projects.ownerId, userId),
+          or(eq(projects.status, "launched"), eq(projects.status, "featured"))
+        )
+      ),
+    // ARTICLES PUBLISHED (ONLY IS_PUBLISHED = TRUE)
     db
       .select({ count: count() })
       .from(articles)
-      .where(eq(articles.authorId, userId)),
+      .where(
+        and(eq(articles.authorId, userId), eq(articles.isPublished, true))
+      ),
     // COMMENTS MADE
     db
       .select({ count: count() })
