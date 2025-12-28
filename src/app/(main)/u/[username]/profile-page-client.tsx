@@ -7,12 +7,13 @@ import {
   ProfileTabs,
   ProfileTabContent,
   ProfileProjects,
+  ProfileArticles,
   ProfileFollowers,
   ProfileFollowing,
 } from "@/components/profile";
 import { useCallback } from "react";
+import { Activity, Trophy } from "lucide-react";
 import type { ProfileWithStats } from "@/types/database";
-import { FileText, Activity, Trophy } from "lucide-react";
 import { useRouter, useSearchParams } from "next/navigation";
 
 // <== PROFILE PAGE CLIENT PROPS ==>
@@ -77,23 +78,24 @@ export const ProfilePageClient = ({
         </ProfileTabContent>
         {/* ARTICLES TAB */}
         <ProfileTabContent value="articles">
-          <div className="text-center py-8 sm:py-12">
-            <FileText className="size-10 sm:size-12 text-muted-foreground/50 mx-auto mb-3 sm:mb-4" />
-            <p className="text-sm sm:text-base text-muted-foreground">No articles yet</p>
-          </div>
+          <ProfileArticles profileId={profile.id} />
         </ProfileTabContent>
         {/* ACTIVITY TAB */}
         <ProfileTabContent value="activity">
           <div className="text-center py-8 sm:py-12">
             <Activity className="size-10 sm:size-12 text-muted-foreground/50 mx-auto mb-3 sm:mb-4" />
-            <p className="text-sm sm:text-base text-muted-foreground">No recent activity</p>
+            <p className="text-sm sm:text-base text-muted-foreground">
+              No recent activity
+            </p>
           </div>
         </ProfileTabContent>
         {/* ACHIEVEMENTS TAB */}
         <ProfileTabContent value="achievements">
           <div className="text-center py-8 sm:py-12">
             <Trophy className="size-10 sm:size-12 text-muted-foreground/50 mx-auto mb-3 sm:mb-4" />
-            <p className="text-sm sm:text-base text-muted-foreground">No achievements yet</p>
+            <p className="text-sm sm:text-base text-muted-foreground">
+              No achievements yet
+            </p>
           </div>
         </ProfileTabContent>
         {/* FOLLOWERS TAB */}
