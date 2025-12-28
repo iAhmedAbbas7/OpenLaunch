@@ -48,7 +48,7 @@ export function useUserAchievements(userId: string) {
     queryKey: achievementKeys.byUser(userId),
     // QUERY FUNCTION
     queryFn: async () => {
-      // FETCH USER ACHIEVEMENTS
+      // FETCH USER ACHIEVEMENTS (THIS ALSO AUTO-UNLOCKS ELIGIBLE ONES)
       const result = await getUserAchievements(userId);
       // THROW ERROR IF FAILED
       if (!result.success) {
@@ -58,8 +58,10 @@ export function useUserAchievements(userId: string) {
       // RETURN DATA
       return result.data;
     },
-    // QUERY OPTIONS
-    staleTime: 2 * 60 * 1000,
+    // STALE TIME - KEEP FRESH TO DETECT NEW ACHIEVEMENTS
+    staleTime: 30 * 1000,
+    // REFETCH ON MOUNT TO ENSURE FRESH DATA
+    refetchOnMount: true,
     // ENABLED
     enabled: !!userId,
   });
@@ -73,7 +75,7 @@ export function useUserAchievementSummary(userId: string) {
     queryKey: [...achievementKeys.byUser(userId), "summary"],
     // QUERY FUNCTION
     queryFn: async () => {
-      // FETCH SUMMARY
+      // FETCH SUMMARY (ALSO TRIGGERS AUTO-UNLOCK VIA getUserAchievements)
       const result = await getUserAchievementSummary(userId);
       // THROW ERROR IF FAILED
       if (!result.success) {
@@ -83,8 +85,10 @@ export function useUserAchievementSummary(userId: string) {
       // RETURN DATA
       return result.data;
     },
-    // QUERY OPTIONS
-    staleTime: 2 * 60 * 1000,
+    // STALE TIME - KEEP FRESH TO DETECT NEW ACHIEVEMENTS
+    staleTime: 30 * 1000,
+    // REFETCH ON MOUNT TO ENSURE FRESH DATA
+    refetchOnMount: true,
     // ENABLED
     enabled: !!userId,
   });
