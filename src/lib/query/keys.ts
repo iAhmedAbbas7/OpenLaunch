@@ -36,6 +36,9 @@ export const projectKeys = {
   // FEATURED PROJECTS
   featured: (limit?: number) =>
     [...projectKeys.lists(), "featured", limit] as const,
+  // LAUNCHES BY PERIOD
+  launches: (period: string, limit?: number) =>
+    [...projectKeys.lists(), "launches", period, limit] as const,
   // USER'S PROJECTS
   byOwner: (ownerId: string) =>
     [...projectKeys.lists(), "owner", ownerId] as const,
