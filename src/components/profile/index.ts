@@ -7,3 +7,4 @@ export {
 export { ProfileTabs, ProfileTabContent } from "./profile-tabs";
 export { ProfileHeader, ProfileHeaderSkeleton } from "./profile-header";
 export { ProfileProjects, ProfileProjectsSkeleton } from "./profile-projects";
+export { ProfileArticles, ProfileArticlesSkeleton } from "./profile-articles";
