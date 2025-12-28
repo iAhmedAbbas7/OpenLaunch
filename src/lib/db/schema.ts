@@ -123,6 +123,18 @@ export const profiles = pgTable(
     currentStreak: integer("current_streak").default(0).notNull(),
     longestStreak: integer("longest_streak").default(0).notNull(),
     lastStreakDate: timestamp("last_streak_date", { withTimezone: true }),
+    notificationPreferences: jsonb("notification_preferences")
+      .default({
+        newFollower: true,
+        projectUpvoted: true,
+        commentReceived: true,
+        commentReply: true,
+        articleLiked: true,
+        achievementUnlocked: true,
+        projectFeatured: true,
+        messageReceived: true,
+      })
+      .notNull(),
     createdAt: timestamp("created_at", { withTimezone: true })
       .defaultNow()
       .notNull(),
