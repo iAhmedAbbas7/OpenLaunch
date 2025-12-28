@@ -92,6 +92,12 @@ export const createProjectSchema = z.object({
 // <== UPDATE PROJECT SCHEMA ==>
 export const updateProjectSchema = createProjectSchema.partial();
 
+// <== LAUNCH PERIOD OPTIONS ==>
+export const launchPeriodSchema = z.enum(["today", "week", "month", "all"]);
+
+// <== LAUNCH PERIOD TYPE ==>
+export type LaunchPeriod = z.infer<typeof launchPeriodSchema>;
+
 // <== PROJECT FILTERS SCHEMA ==>
 export const projectFiltersSchema = z.object({
   // <== STATUS ==>
@@ -106,6 +112,8 @@ export const projectFiltersSchema = z.object({
   isOpenSource: z.boolean().optional(),
   // <== SEARCH ==>
   search: z.string().max(100).optional(),
+  // <== LAUNCH PERIOD ==>
+  launchPeriod: launchPeriodSchema.optional(),
 });
 
 // <== PROJECT SORT OPTIONS ==>
