@@ -55,6 +55,8 @@ export function useArticles(
       // RETURN DATA
       return result.data;
     },
+    // CACHE FOR 2 MINUTES
+    staleTime: 2 * 60 * 1000,
   });
 }
 
@@ -138,6 +140,8 @@ export function useMyArticles(page: number = 1, limit: number = 12) {
       // RETURN DATA
       return result.data;
     },
+    // CACHE FOR 2 MINUTES
+    staleTime: 2 * 60 * 1000,
   });
 }
 
@@ -167,6 +171,8 @@ export function useArticlesByAuthor(
     },
     // ENABLED
     enabled: !!authorId,
+    // CACHE FOR 5 MINUTES
+    staleTime: 5 * 60 * 1000,
   });
 }
 
@@ -190,6 +196,8 @@ export function useTrendingArticles(limit: number = 10) {
       // RETURN DATA
       return result.data;
     },
+    // CACHE FOR 1 MINUTE (TRENDING CHANGES FREQUENTLY)
+    staleTime: 60 * 1000,
   });
 }
 
@@ -211,6 +219,8 @@ export function useArticleTags() {
       // RETURN DATA
       return result.data;
     },
+    // CACHE FOR 10 MINUTES (TAGS RARELY CHANGE)
+    staleTime: 10 * 60 * 1000,
   });
 }
 
