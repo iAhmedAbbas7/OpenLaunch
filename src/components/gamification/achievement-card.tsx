@@ -102,7 +102,7 @@ export const AchievementCard = ({
   return (
     <Card
       className={cn(
-        "relative overflow-hidden transition-all duration-200",
+        "relative overflow-hidden transition-all duration-200 h-full",
         achievement.isUnlocked
           ? "hover:shadow-md hover:scale-[1.02]"
           : "opacity-60 grayscale-30",
@@ -117,8 +117,8 @@ export const AchievementCard = ({
         )}
       />
       {/* CONTENT */}
-      <div className={cn("relative", sc.card)}>
-        <div className="flex items-start gap-3">
+      <div className={cn("relative h-full flex flex-col", sc.card)}>
+        <div className="flex items-start gap-3 flex-1">
           {/* ICON CONTAINER */}
           <div
             className={cn(
@@ -141,7 +141,7 @@ export const AchievementCard = ({
             )}
           </div>
           {/* INFO */}
-          <div className="flex-1 min-w-0">
+          <div className="flex-1 min-w-0 flex flex-col">
             {/* HEADER */}
             <div className="flex items-start justify-between gap-2">
               {/* TITLE */}
@@ -165,7 +165,7 @@ export const AchievementCard = ({
             {/* DESCRIPTION */}
             <p
               className={cn(
-                "text-muted-foreground mt-1 line-clamp-2",
+                "text-muted-foreground mt-1 line-clamp-2 flex-1",
                 sc.description
               )}
             >
@@ -189,17 +189,17 @@ export const AchievementCard = ({
                 </span>
               ) : null}
             </div>
-            {/* PROGRESS BAR */}
-            {!achievement.isUnlocked &&
-              showProgress &&
-              achievement.targetValue > 0 && (
-                <div className="mt-3">
+            {/* PROGRESS BAR - ALWAYS RESERVE SPACE FOR CONSISTENCY */}
+            <div className="mt-3 h-1.5">
+              {!achievement.isUnlocked &&
+                showProgress &&
+                achievement.targetValue > 0 && (
                   <Progress
                     value={achievement.progressPercentage}
                     className="h-1.5"
                   />
-                </div>
-              )}
+                )}
+            </div>
           </div>
         </div>
       </div>
