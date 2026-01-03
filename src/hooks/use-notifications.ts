@@ -408,7 +408,7 @@ export function useUpdateNotificationPreferences() {
       return { previousPreferences };
     },
     // ON ERROR (ROLLBACK)
-    onError: (_error, _notificationId, context) => {
+    onError: (_error, _variables, context) => {
       // ROLLBACK
       if (context?.previousPreferences) {
         queryClient.setQueryData(
@@ -419,17 +419,15 @@ export function useUpdateNotificationPreferences() {
       // SHOW ERROR TOAST
       toast.error("Failed to update notification preferences");
     },
-    // ON SUCCESS
-    onSuccess: () => {
+    // ON SUCCESS (UPDATE CACHE WITH SERVER RESPONSE)
+    onSuccess: (data) => {
+      // UPDATE CACHE WITH SERVER RESPONSE (AUTHORITATIVE DATA)
+      queryClient.setQueryData(
+        [...notificationKeys.all, "preferences"],
+        data
+      );
       // SHOW SUCCESS TOAST
       toast.success("Notification preferences updated");
-    },
-    // ON SETTLED
-    onSettled: () => {
-      // INVALIDATE QUERIES
-      queryClient.invalidateQueries({
-        queryKey: [...notificationKeys.all, "preferences"],
-      });
     },
   });
 }
