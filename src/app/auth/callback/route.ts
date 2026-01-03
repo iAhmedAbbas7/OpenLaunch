@@ -25,13 +25,21 @@ export async function GET(request: Request) {
     // EXCHANGE CODE FOR SESSION
     const { data, error } = await supabase.auth.exchangeCodeForSession(code);
     // CHECK IF ERROR OCCURRED
-    if (!error && data.user) {
+    if (!error && data.user && data.session) {
       // ENSURE PROFILE EXISTS
       try {
         await ensureProfileExists(data.user);
       } catch (profileError) {
         // LOG ERROR BUT DON'T BLOCK LOGIN
         console.error("Profile creation error:", profileError);
+      }
+      // TRY TO PERSIST GITHUB ACCESS TOKEN
+      try {
+        // PERSIST GITHUB ACCESS TOKEN
+        await persistGitHubTokenIfNeeded(data.user, data.session);
+      } catch (tokenError) {
+        // LOG ERROR BUT DON'T BLOCK LOGIN
+        console.error("GitHub token persistence error:", tokenError);
       }
       // HANDLE FORWARDED HOST FOR PRODUCTION DEPLOYMENTS
       const forwardedHost = request.headers.get("x-forwarded-host");
@@ -117,4 +125,47 @@ async function ensureProfileExists(user: {
       (user.user_metadata?.user_name as string | undefined) ?? null,
     lastLoginAt: new Date(),
   });
+}
+
+// <== PERSIST GITHUB TOKEN IF NEEDED ==>
+async function persistGitHubTokenIfNeeded(
+  user: {
+    id: string;
+    app_metadata?: Record<string, unknown>;
+    user_metadata?: Record<string, unknown>;
+  },
+  session: {
+    provider_token?: string | null;
+  }
+) {
+  // CHECK IF SESSION HAS PROVIDER TOKEN
+  if (!session.provider_token) {
+    // NO PROVIDER TOKEN (EMAIL/PASSWORD LOGIN)
+    return;
+  }
+  // GET PROVIDER FROM APP METADATA
+  const provider = user.app_metadata?.provider as string | undefined;
+  // GET PROVIDERS FROM APP METADATA
+  const providers = user.app_metadata?.providers as string[] | undefined;
+  // CHECK IF THIS IS A GITHUB OAUTH LOGIN
+  const isGitHubAuth =
+    provider === "github" || (providers && providers.includes("github"));
+  // ALSO CHECK FOR GITHUB USERNAME IN USER METADATA AS A FALLBACK
+  const hasGitHubUsername = !!user.user_metadata?.user_name;
+  // IF NOT GITHUB AUTH AND NO GITHUB USERNAME, RETURN
+  if (!isGitHubAuth && !hasGitHubUsername) {
+    // SKIP PERSISTING GITHUB ACCESS TOKEN
+    return;
+  }
+  // GET GITHUB USERNAME FROM USER METADATA
+  const githubUsername = user.user_metadata?.user_name as string | undefined;
+  // UPDATE PROFILE WITH GITHUB ACCESS TOKEN
+  await db
+    .update(profiles)
+    .set({
+      githubAccessToken: session.provider_token,
+      ...(githubUsername ? { githubUsername } : {}),
+      updatedAt: new Date(),
+    })
+    .where(eq(profiles.userId, user.id));
 }
