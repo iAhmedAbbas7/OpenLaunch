@@ -2,6 +2,7 @@
 export * from "./use-auth";
 export * from "./use-follow";
 export * from "./use-github";
+export * from "./use-search";
 export * from "./use-profile";
 export * from "./use-articles";
 export * from "./use-projects";
