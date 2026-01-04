@@ -18,4 +18,3 @@ const NotificationsPage = () => {
 
 // <== EXPORTING NOTIFICATIONS PAGE ==>
 export default NotificationsPage;
-
