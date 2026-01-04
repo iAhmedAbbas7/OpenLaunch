@@ -57,6 +57,15 @@ export {
   getSuggestedUsers,
 } from "./social";
 
+// <== SEARCH ACTIONS ==>
+export {
+  searchProjects,
+  searchArticles,
+  searchUsers,
+  searchAll,
+  getSearchSuggestions,
+} from "./search";
+
 // <== GITHUB ACTIONS ==>
 export {
   getGitHubConnectionStatus,
