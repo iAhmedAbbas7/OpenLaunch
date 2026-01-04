@@ -6,6 +6,7 @@ import {
   Sheet,
   SheetContent,
   SheetDescription,
+  SheetFooter,
   SheetHeader,
   SheetTitle,
   SheetTrigger,
@@ -196,51 +197,87 @@ export const ArticleFilters = ({
               )}
             </Button>
           </SheetTrigger>
-          <SheetContent side="bottom" className="h-[70vh]">
-            <SheetHeader>
-              <SheetTitle>Filter Articles</SheetTitle>
+          <SheetContent
+            side="bottom"
+            className="h-[60vh] rounded-t-2xl flex flex-col"
+          >
+            {/* HEADER */}
+            <SheetHeader className="pb-2 border-b border-border/50">
+              <SheetTitle className="text-lg">Filter Articles</SheetTitle>
               <SheetDescription>
                 Filter articles by tags to find what you&apos;re looking for.
               </SheetDescription>
             </SheetHeader>
-            <div className="mt-4 space-y-4">
-              {/* TAGS IN MOBILE SHEET */}
+            {/* SCROLLABLE CONTENT */}
+            <div className="flex-1 overflow-y-auto px-4 py-4">
+              {/* TAGS SECTION */}
               {availableTags.length > 0 && (
-                <div className="space-y-2">
-                  <p className="text-sm font-medium">Tags</p>
-                  <div className="flex flex-wrap gap-2 max-h-64 overflow-y-auto">
+                <div className="space-y-3">
+                  <div className="flex items-center justify-between">
+                    <p className="text-sm font-semibold text-foreground">
+                      Tags
+                    </p>
+                    {filters.tags && filters.tags.length > 0 && (
+                      <span className="text-xs text-muted-foreground">
+                        {filters.tags.length} selected
+                      </span>
+                    )}
+                  </div>
+                  <div className="flex flex-wrap gap-2">
                     {availableTags.map((tag) => {
+                      // CHECK IF TAG IS SELECTED
                       const isSelected = filters.tags?.includes(tag);
+                      // RETURN BADGE
                       return (
                         <Badge
                           key={tag}
                           variant={isSelected ? "default" : "outline"}
-                          className="cursor-pointer text-xs"
+                          className={`cursor-pointer text-sm py-1.5 px-3 transition-all ${
+                            isSelected
+                              ? "bg-primary text-primary-foreground shadow-sm"
+                              : "hover:bg-secondary hover:border-primary/50"
+                          }`}
                           onClick={() => handleTagToggle(tag)}
                         >
                           {tag}
+                          {isSelected && <X className="size-3 ml-1.5" />}
                         </Badge>
                       );
                     })}
                   </div>
                 </div>
               )}
-              {/* CLEAR FILTERS */}
+              {/* EMPTY TAGS STATE */}
+              {availableTags.length === 0 && (
+                <div className="text-center py-8 text-muted-foreground">
+                  <p className="text-sm">No tags available</p>
+                </div>
+              )}
+            </div>
+            {/* FOOTER WITH ACTIONS */}
+            <SheetFooter className="border-t border-border/50 pt-4 gap-3">
               {hasActiveFilters && (
                 <Button
                   variant="outline"
-                  size="sm"
                   onClick={() => {
                     onReset();
                     setSearchInput("");
-                    setIsFiltersOpen(false);
                   }}
-                  className="w-full"
+                  className="flex-1"
                 >
-                  Clear All Filters
+                  <X className="size-4 mr-2" />
+                  Clear Filters
                 </Button>
               )}
-            </div>
+              <Button
+                onClick={() => setIsFiltersOpen(false)}
+                className="flex-1"
+              >
+                {hasActiveFilters
+                  ? `Show Results (${filters.tags?.length ?? 0} filters)`
+                  : "Done"}
+              </Button>
+            </SheetFooter>
           </SheetContent>
         </Sheet>
       </div>
