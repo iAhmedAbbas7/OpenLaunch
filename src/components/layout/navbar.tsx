@@ -5,13 +5,22 @@
 import Link from "next/link";
 import { cn } from "@/lib/utils";
 import { useAuth } from "@/hooks/use-auth";
-import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Logo } from "@/components/common/Logo";
+import { SearchCommand } from "@/components/search";
 import { UserMenu } from "@/components/auth/user-menu";
+import { useState, useEffect, useCallback } from "react";
 import { NotificationBell } from "@/components/notifications";
 import { useUnreadMessagesCount } from "@/hooks/use-messages";
-import { Menu, X, Loader2, LogOut, MessageCircle, Bell } from "lucide-react";
+import {
+  Menu,
+  X,
+  Loader2,
+  LogOut,
+  MessageCircle,
+  Bell,
+  Search,
+} from "lucide-react";
 
 // <== NAV LINKS ==>
 const navLinks = [
@@ -68,8 +77,10 @@ export const Navbar = () => {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   // STATE FOR SCROLL
   const [isScrolled, setIsScrolled] = useState(false);
+  // STATE FOR SEARCH COMMAND DIALOG
+  const [isSearchOpen, setIsSearchOpen] = useState(false);
   // GET AUTH HOOK
-  const { isAuthenticated, isLoading } = useAuth();
+  const { isAuthenticated, isLoading, profile } = useAuth();
   // GET UNREAD MESSAGES COUNT
   const { data: unreadCount } = useUnreadMessagesCount();
   // <== HANDLE SCROLL ==>
@@ -82,6 +93,27 @@ export const Navbar = () => {
     window.addEventListener("scroll", handleScroll);
     // CLEANUP
     return () => window.removeEventListener("scroll", handleScroll);
+  }, []);
+  // <== HANDLE KEYBOARD SHORTCUT ==>
+  useEffect(() => {
+    // HANDLE KEYDOWN FUNCTION
+    const handleKeyDown = (e: KeyboardEvent) => {
+      // CHECK IF CMD/CTRL + K
+      if ((e.metaKey || e.ctrlKey) && e.key === "k") {
+        // PREVENT DEFAULT
+        e.preventDefault();
+        // TOGGLE SEARCH DIALOG
+        setIsSearchOpen((prev) => !prev);
+      }
+    };
+    // ADD EVENT LISTENER
+    document.addEventListener("keydown", handleKeyDown);
+    // CLEANUP
+    return () => document.removeEventListener("keydown", handleKeyDown);
+  }, []);
+  // <== OPEN SEARCH ==>
+  const openSearch = useCallback(() => {
+    setIsSearchOpen(true);
   }, []);
   // RETURNING NAVBAR COMPONENT
   return (
@@ -128,8 +160,17 @@ export const Navbar = () => {
               // LOADING STATE
               <div className="w-20 h-9 rounded-md bg-secondary animate-pulse" />
             ) : isAuthenticated ? (
-              // NOTIFICATIONS, MESSAGES AND USER MENU
+              // SEARCH, NOTIFICATIONS, MESSAGES AND USER MENU
               <div className="flex items-center gap-2">
+                {/* SEARCH BUTTON */}
+                <button
+                  onClick={openSearch}
+                  className="relative flex items-center justify-center size-9 rounded-full border-2 border-primary/60 hover:border-primary hover:bg-primary/10 transition-all duration-200"
+                  aria-label="Search (⌘K)"
+                  title="Search (⌘K)"
+                >
+                  <Search className="size-4 text-primary" />
+                </button>
                 {/* NOTIFICATIONS BELL */}
                 <NotificationBell />
                 {/* MESSAGES ICON - PINK CIRCLE WITH PINK ICON */}
@@ -147,8 +188,17 @@ export const Navbar = () => {
                 <UserMenu />
               </div>
             ) : (
-              // AUTH BUTTONS
-              <>
+              // SEARCH AND AUTH BUTTONS
+              <div className="flex items-center gap-3">
+                {/* SEARCH BUTTON */}
+                <button
+                  onClick={openSearch}
+                  className="flex items-center justify-center size-9 rounded-full border-2 border-border/60 hover:border-border hover:bg-secondary/50 transition-all duration-200"
+                  aria-label="Search (⌘K)"
+                  title="Search (⌘K)"
+                >
+                  <Search className="size-4 text-muted-foreground" />
+                </button>
                 <Button
                   variant="outline"
                   size="sm"
@@ -160,7 +210,7 @@ export const Navbar = () => {
                 <Button size="sm" asChild className="h-9 px-4 cursor-pointer">
                   <Link href="/sign-up">Get Started</Link>
                 </Button>
-              </>
+              </div>
             )}
           </div>
           {/* MOBILE: USER AVATAR + MENU BUTTON */}
@@ -188,6 +238,17 @@ export const Navbar = () => {
         <div className="lg:hidden bg-background/95 backdrop-blur-xl border-b border-border/50">
           {/* MOBILE NAV LINKS */}
           <div className="container mx-auto px-4 py-4 space-y-1">
+            {/* MOBILE SEARCH BUTTON */}
+            <button
+              onClick={() => {
+                setIsMobileMenuOpen(false);
+                setIsSearchOpen(true);
+              }}
+              className="flex items-center gap-3 w-full px-4 py-3 text-sm font-medium text-muted-foreground hover:text-foreground hover:bg-secondary/50 rounded-lg cursor-pointer transition-colors duration-200"
+            >
+              <Search className="size-4" />
+              Search
+            </button>
             {navLinks.map((link) => (
               <Link
                 key={link.href}
@@ -204,20 +265,8 @@ export const Navbar = () => {
                 // LOADING STATE
                 <div className="w-full h-11 rounded-md bg-secondary animate-pulse" />
               ) : isAuthenticated ? (
-                // AUTHENTICATED - SHOW DASHBOARD, MESSAGES AND SIGN OUT
+                // AUTHENTICATED - SHOW NOTIFICATIONS AND SIGN OUT
                 <>
-                  <Button
-                    variant="outline"
-                    className="w-full h-11 cursor-pointer"
-                    asChild
-                  >
-                    <Link
-                      href="/dashboard"
-                      onClick={() => setIsMobileMenuOpen(false)}
-                    >
-                      Dashboard
-                    </Link>
-                  </Button>
                   <Button
                     variant="outline"
                     className="w-full h-11 cursor-pointer"
@@ -229,23 +278,6 @@ export const Navbar = () => {
                     >
                       <Bell className="size-4 mr-2" />
                       Notifications
-                    </Link>
-                  </Button>
-                  <Button
-                    variant="outline"
-                    className="w-full h-11 cursor-pointer relative"
-                    asChild
-                  >
-                    <Link
-                      href="/messages"
-                      onClick={() => setIsMobileMenuOpen(false)}
-                    >
-                      <MessageCircle className="size-4 mr-2" />
-                      Messages
-                      {/* UNREAD DOT INDICATOR */}
-                      {(unreadCount ?? 0) > 0 ? (
-                        <span className="ml-2 size-2.5 bg-primary rounded-full" />
-                      ) : null}
                     </Link>
                   </Button>
                   <MobileSignOutButton
@@ -281,6 +313,13 @@ export const Navbar = () => {
           </div>
         </div>
       )}
+      {/* SEARCH COMMAND DIALOG */}
+      <SearchCommand
+        open={isSearchOpen}
+        onOpenChange={setIsSearchOpen}
+        isAuthenticated={isAuthenticated}
+        username={profile?.username}
+      />
     </header>
   );
 };
