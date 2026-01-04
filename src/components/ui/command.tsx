@@ -2,12 +2,6 @@
 "use client";
 
 // <== IMPORTS ==>
-import * as React from "react";
-import { cn } from "@/lib/utils";
-import { SearchIcon } from "lucide-react";
-import { Command as CommandPrimitive } from "cmdk";
-
-// <== DIALOG COMPONENTS ==>
 import {
   Dialog,
   DialogContent,
@@ -15,6 +9,10 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
+import * as React from "react";
+import { cn } from "@/lib/utils";
+import { SearchIcon } from "lucide-react";
+import { Command as CommandPrimitive } from "cmdk";
 
 // <== COMMAND COMPONENT ==>
 const Command = ({
@@ -23,6 +21,7 @@ const Command = ({
 }: React.ComponentProps<typeof CommandPrimitive>) => {
   // RETURNING COMMAND COMPONENT
   return (
+    // OPENING COMMAND PRIMITIVE
     <CommandPrimitive
       data-slot="command"
       className={cn(
@@ -52,18 +51,18 @@ const CommandDialog = ({
   return (
     // OPENING DIALOG
     <Dialog {...props}>
-      {/* DIALOG HEADER */}
-      <DialogHeader className="sr-only">
-        {/* DIALOG TITLE */}
-        <DialogTitle>{title}</DialogTitle>
-        {/* DIALOG DESCRIPTION */}
-        <DialogDescription>{description}</DialogDescription>
-      </DialogHeader>
       {/* DIALOG CONTENT */}
       <DialogContent
         className={cn("overflow-hidden p-0", className)}
         showCloseButton={showCloseButton}
       >
+        {/* DIALOG HEADER (SR ONLY FOR ACCESSIBILITY) */}
+        <DialogHeader className="sr-only">
+          {/* DIALOG TITLE */}
+          <DialogTitle>{title}</DialogTitle>
+          {/* DIALOG DESCRIPTION */}
+          <DialogDescription>{description}</DialogDescription>
+        </DialogHeader>
         {/* COMMAND COMPONENT */}
         <Command className="**:[[cmdk-group-heading]]:text-muted-foreground **:data-[slot=command-input-wrapper]:h-12 **:[[cmdk-group-heading]]:px-2 **:[[cmdk-group-heading]]:font-medium **:[[cmdk-group]]:px-2 **:[[cmdk-group]:not([hidden])_~[cmdk-group]]:pt-0 **:[[cmdk-input-wrapper]_svg]:h-5 **:[[cmdk-input-wrapper]_svg]:w-5 **:[[cmdk-input]]:h-12 **:[[cmdk-item]]:px-2 **:[[cmdk-item]]:py-3 **:[[cmdk-item]_svg]:h-5 **:[[cmdk-item]_svg]:w-5">
           {children}
