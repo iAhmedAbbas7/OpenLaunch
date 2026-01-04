@@ -1,5 +1,6 @@
 // <== VALIDATION SCHEMAS ==>
 export * from "./auth";
+export * from "./search";
 export * from "./profiles";
 export * from "./projects";
 export * from "./articles";
