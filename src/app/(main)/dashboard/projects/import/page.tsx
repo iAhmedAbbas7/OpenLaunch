@@ -1,4 +1,5 @@
 // <== IMPORTS ==>
+import { Suspense } from "react";
 import Link from "next/link";
 import type { Metadata } from "next";
 import { ArrowLeft, Github } from "lucide-react";
@@ -43,7 +44,9 @@ const ImportFromGitHubPage = () => {
       </div>
 
       {/* IMPORT CLIENT */}
-      <ImportFromGitHubClient />
+      <Suspense fallback={<div />}>
+        <ImportFromGitHubClient />
+      </Suspense>
     </div>
   );
 };
