@@ -1,4 +1,5 @@
 // <== IMPORTS ==>
+import { Suspense } from "react";
 import type { Metadata } from "next";
 import { LaunchesPageClient } from "./launches-page-client";
 
@@ -17,7 +18,11 @@ export const metadata: Metadata = {
 // <== LAUNCHES PAGE ==>
 const LaunchesPage = () => {
   // RETURN LAUNCHES PAGE COMPONENT
-  return <LaunchesPageClient />;
+  return (
+    <Suspense fallback={<div />}>
+      <LaunchesPageClient />
+    </Suspense>
+  );
 };
 
 // <== EXPORTING LAUNCHES PAGE ==>
