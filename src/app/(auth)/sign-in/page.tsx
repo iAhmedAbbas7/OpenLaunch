@@ -1,4 +1,5 @@
 // <== IMPORTS ==>
+import { Suspense } from "react";
 import type { Metadata } from "next";
 import { SignInForm } from "@/components/auth/sign-in-form";
 
@@ -13,7 +14,11 @@ export const metadata: Metadata = {
 // <== SIGN IN PAGE COMPONENT ==>
 const SignInPage = () => {
   // RETURNING SIGN IN PAGE COMPONENT
-  return <SignInForm />;
+  return (
+    <Suspense fallback={null}>
+      <SignInForm />
+    </Suspense>
+  );
 };
 
 // <== EXPORTING SIGN IN PAGE ==>
