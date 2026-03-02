@@ -1,4 +1,5 @@
 // <== IMPORTS ==>
+import { Suspense } from "react";
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import { ProfilePageClient } from "./profile-page-client";
@@ -74,7 +75,11 @@ const ProfilePage = async ({ params, searchParams }: ProfilePageProps) => {
     notFound();
   }
   // RETURN PAGE
-  return <ProfilePageClient profile={result.data} initialTab={tab} />;
+  return (
+    <Suspense fallback={<div />}>
+      <ProfilePageClient profile={result.data} initialTab={tab} />
+    </Suspense>
+  );
 };
 
 export default ProfilePage;
