@@ -1,4 +1,5 @@
 // <== IMPORTS ==>
+import { Suspense } from "react";
 import type { Metadata } from "next";
 import { NotificationsPageClient } from "./notifications-page-client";
 
@@ -13,7 +14,11 @@ export const metadata: Metadata = {
 // <== NOTIFICATIONS PAGE ==>
 const NotificationsPage = () => {
   // RETURNING NOTIFICATIONS PAGE CLIENT
-  return <NotificationsPageClient />;
+  return (
+    <Suspense fallback={<div />}>
+      <NotificationsPageClient />
+    </Suspense>
+  );
 };
 
 // <== EXPORTING NOTIFICATIONS PAGE ==>
