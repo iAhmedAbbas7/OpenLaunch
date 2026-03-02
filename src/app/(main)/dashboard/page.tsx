@@ -1,4 +1,5 @@
 // <== IMPORTS ==>
+import { Suspense } from "react";
 import type { Metadata } from "next";
 import { DashboardClient } from "./dashboard-client";
 
@@ -13,7 +14,11 @@ export const metadata: Metadata = {
 // <== DASHBOARD PAGE ==>
 const DashboardPage = () => {
   // RETURNING DASHBOARD CLIENT
-  return <DashboardClient />;
+  return (
+    <Suspense fallback={<div />}>
+      <DashboardClient />
+    </Suspense>
+  );
 };
 
 // <== EXPORTING DASHBOARD PAGE ==>
