@@ -1,6 +1,6 @@
 // <== IMPORTS ==>
-import { Suspense } from "react";
 import Link from "next/link";
+import { Suspense } from "react";
 import type { Metadata } from "next";
 import { ArrowLeft, Github } from "lucide-react";
 import { ImportFromGitHubClient } from "./import-client";

@@ -82,4 +82,5 @@ const ProfilePage = async ({ params, searchParams }: ProfilePageProps) => {
   );
 };
 
+// <== EXPORTING PROFILE PAGE ==>
 export default ProfilePage;
