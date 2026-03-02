@@ -1,4 +1,5 @@
 // <== IMPORTS ==>
+import { Suspense } from "react";
 import type { Metadata } from "next";
 import { MyArticlesClient } from "./my-articles-client";
 
@@ -13,5 +14,9 @@ export const metadata: Metadata = {
 // <== MY ARTICLES PAGE ==>
 export default function MyArticlesPage() {
   // RETURNING PAGE
-  return <MyArticlesClient />;
+  return (
+    <Suspense fallback={<div />}>
+      <MyArticlesClient />
+    </Suspense>
+  );
 }
