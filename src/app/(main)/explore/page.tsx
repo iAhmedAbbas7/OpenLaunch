@@ -1,4 +1,5 @@
 // <== IMPORTS ==>
+import { Suspense } from "react";
 import type { Metadata } from "next";
 import { ExplorePageClient } from "./explore-page-client";
 
@@ -17,7 +18,11 @@ export const metadata: Metadata = {
 // <== EXPLORE PAGE ==>
 const ExplorePage = () => {
   // RETURN EXPLORE PAGE COMPONENT
-  return <ExplorePageClient />;
+  return (
+    <Suspense fallback={<div />}>
+      <ExplorePageClient />
+    </Suspense>
+  );
 };
 
 // <== EXPORTING EXPLORE PAGE ==>
