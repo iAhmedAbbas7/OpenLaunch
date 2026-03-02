@@ -1,4 +1,5 @@
 // <== IMPORTS ==>
+import { Suspense } from "react";
 import type { Metadata } from "next";
 import { MyProjectsClient } from "./my-projects-client";
 
@@ -13,7 +14,11 @@ export const metadata: Metadata = {
 // <== MY PROJECTS PAGE ==>
 const MyProjectsPage = () => {
   // RETURNING MY PROJECTS CLIENT
-  return <MyProjectsClient />;
+  return (
+    <Suspense fallback={<div />}>
+      <MyProjectsClient />
+    </Suspense>
+  );
 };
 
 // <== EXPORTING MY PROJECTS PAGE ==>
