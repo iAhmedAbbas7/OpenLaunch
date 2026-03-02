@@ -1,4 +1,5 @@
 // <== IMPORTS ==>
+import { Suspense } from "react";
 import type { Metadata } from "next";
 import { SearchPageClient } from "./search-page-client";
 
@@ -22,7 +23,11 @@ export const metadata: Metadata = {
 // <== SEARCH PAGE ==>
 const SearchPage = () => {
   // RETURN SEARCH PAGE COMPONENT
-  return <SearchPageClient />;
+  return (
+    <Suspense fallback={<div />}>
+      <SearchPageClient />
+    </Suspense>
+  );
 };
 
 // <== EXPORTING SEARCH PAGE ==>
